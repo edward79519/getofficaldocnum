@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>{% block title %}{% endblock %}</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <script src="/static/jquery/jquery.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+
+
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'Site_index' %}">寶晶能源庫_紙本公文要號系統</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'Site_index' %}">首頁
+            <span class="sr-only">(current)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'Doc_index' %}">要號系統</a>
+          </li>
+          {% if user.is_superuser %}
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/">管理員介面</a>
+            </li>
+          {% endif %}
+          <li class="nav-item">
+            {% if request.user.is_authenticated %}
+              <a class="nav-link btn"  href="{% url 'Logout' %}">登出 {{ user.get_username }}</a>
+            {% else %}
+              <a class="nav-link btn" href="{% url 'Login' %}">登入</a>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- Page Content -->
+  {% block content %}{% endblock %}
+  <!-- Bootstrap core JavaScript -->
+  <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Custom JavaScript for this theme -->
+  <script src="/static/custom/formcheck.js"></script>
+
+  <!-- User Defined Javascript -->
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

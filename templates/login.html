@@ -1,0 +1,42 @@
+{% extends 'frame/base.html' %}
+
+{% block title %}Inaenergy{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="mt-5">登入</h1>
+
+    <form action="" method="POST">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="col">
+          {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-danger">
+                  <strong>{{ message }}</strong>
+                </div>
+              {% endfor %}
+          {% endif %}
+
+        </div>
+      </div>
+      <div class="form-row my-3">
+        <div class="col">
+          <label for="id_{{ form.username.name }}">帳號:</label>
+          {{ form.username }}
+        </div>
+      </div>
+      <div class="form-row my-3">
+        <div class="col">
+          <label for="id_{{ form.password.name }}">密碼:</label>
+          {{ form.password }}
+        </div>
+      </div>
+      <div class="form-row my-3">
+        <div class="col">
+          <input class="btn btn-success" type="submit" value="送出" />
+
+        </div>
+      </div>
+  </form>
+</div>
+{% endblock %}
