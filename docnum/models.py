@@ -44,15 +44,16 @@ class OfficalDoc(models.Model):
     )
     sn = models.CharField(
         max_length=10,
-        unique=True,
     )
     fullsn = models.CharField(
         max_length=30,
-        unique=True,
     )
     pubdate = models.DateField()
     title = models.CharField(max_length=300)
     addtime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['comp', 'dept', 'sn']]
 
     def __str__(self):
         return self.fullsn
