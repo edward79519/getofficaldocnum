@@ -1,14 +1,15 @@
 {% extends 'frame/base.html' %}
 
-{% block title %}公文列表 - 寶晶紙本公文{% endblock %}
+{% block title %}{{ comp.fullname }} - 寶晶紙本公文{% endblock %}
 {% block content %}
   <section id="doclist" class="py-3">
     <div class="container py-3">
-      <h1 class="my-3">紙本公文清單</h1>
+      <h1 class="my-3">{{ comp.fullname }} - 公文一覽</h1>
+      <div class="col-12 my-3">
+        <a role="button" class="btn btn-primary" href="{% url 'Doc_add' %}?comp_id={{ comp.id }}">新增</a>
+        <a role="button" class="btn btn-danger" href="{% url 'Comp_index' %}?comp_id={{ comp.id }}">回公司列表</a>
+      </div>
       <div class="row">
-        <div class="col-12 my-3">
-          <a role="button" class="btn btn-primary" href="{% url 'Doc_add' %}">新增</a>
-        </div>
         <div class="col-12">
           <div class="table-responsive">
             <table class="table table-hover">
@@ -27,7 +28,7 @@
                 {% for doc in doc_list %}
                 <tr>
                   <td>{{ doc.pubdate|date:"Y-m-d" }}</td>
-                  <td><a href="{% url 'Comp_detail' doc.comp.id %}">{{ doc.comp }}</a></td>
+                  <td>{{ doc.comp }}</td>
                   <td>{{ doc.dept }}</td>
                   <td>{{ doc.fullsn }}</td>
                   <td>{{ doc.author.last_name }}{{ doc.author.first_name }}</td>
@@ -36,7 +37,7 @@
                 </tr>
                 {% empty %}
                   <tr>
-                    <td colspan="7"> Empty </td>
+                    <td colspan="7" class="text-center"> 目前沒有公文或沒有權限觀看。 </td>
                   </tr>
                 {% endfor %}
               </tbody>

@@ -37,7 +37,10 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'Doc_index' %}">要號系統</a>
+            <a class="nav-link" href="{% url 'Doc_index' %}">公文一覽</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'Comp_index' %}">公司一覽</a>
           </li>
           {% if user.is_superuser %}
             <li class="nav-item">
