@@ -76,9 +76,39 @@ WSGI_APPLICATION = 'officaldoc.wsgi.application'
 
 DATABASES = {
     'default': {
+        'ENGINE': 'mssql',
+        'NAME': 'OfficialDoc_UAT',
+        'USER': 'ina-it',
+        'PASSWORD': 'Pa$$w0rd_inaenergy',
+        'HOST': '192.168.168.121',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+        },
+    },
+    'INA_SAT': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    },
+    'INA_UAT': {
+        'ENGINE': 'mssql',
+        'NAME': 'OfficialDoc_UAT',
+        'USER': 'ina-it',
+        'PASSWORD': 'Pa$$w0rd_inaenergy',
+        'HOST': '192.168.168.121',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+        },
+    },
+    'INA_Prod': {
+        'ENGINE': 'mssql',
+        'NAME': 'OfficialDoc',
+        'USER': 'ina-inner',
+        'PASSWORD': '50791838@INAenergy',
+        'HOST': '192.168.168.121',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+        },
+    },
 }
 
 
