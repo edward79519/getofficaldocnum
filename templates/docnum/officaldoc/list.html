@@ -19,7 +19,7 @@
                   <th scope="col">部門</th>
                   <th scope="col">發文字號</th>
                   <th scope="col">發文人</th>
-                  <th scope="col">主旨</th>
+                  <th scope="col" style="width: 30%">主旨</th>
                   <th scope="col">新增日期</th>
                 </tr>
               </thead>
@@ -27,9 +27,9 @@
                 {% for doc in doc_list %}
                 <tr>
                   <td>{{ doc.pubdate|date:"Y-m-d" }}</td>
-                  <td><a href="{% url 'Comp_detail' doc.comp.id %}">{{ doc.comp }}</a></td>
+                  <td><a href="{% url 'Comp_detail' doc.comp.id %}">{{ doc.comp.shortname }}</a></td>
                   <td>{{ doc.dept }}</td>
-                  <td>{{ doc.fullsn }}</td>
+                  <td><a href="{% url 'Doc_add_result' doc.id %}">{{ doc.fullsn }}</a></td>
                   <td>{{ doc.author.last_name }}{{ doc.author.first_name }}</td>
                   <td>{{ doc.title }}</td>
                   <td>{{ doc.addtime|date:"Y-m-d" }}</td>

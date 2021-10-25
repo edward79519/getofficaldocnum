@@ -1,0 +1,85 @@
+{% extends 'frame/base.html' %}
+
+{% block title %}{{ doc.fullsn }} - 寶晶紙本公文{% endblock %}
+{% block content %}
+  <section id="doclist" class="py-3">
+    <div class="container py-3">
+      {% if messages %}
+          {% for message in messages %}
+            <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
+              {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+              {{ message }}
+            </div>
+          {% endfor %}
+      {% endif %}
+      <h1 class="my-3">{{ doc.fullsn }} - 詳細資料</h1>
+      <div class="mb-5 text-right"><span class="text-muted">新增日期: {{ doc.addtime|date:"Y-m-d g:i:s a" }}</span></div>
+
+      <div class="row my-3">
+        <div class="col-sm-3 col-lg-2">
+          <p class="font-weight-bold">發文日期</p>
+        </div>
+        <div class="col">
+          <p>{{ doc.pubdate|date:"Y-m-d" }}</p>
+        </div>
+
+      </div>
+      <div class="row my-3">
+        <div class="col-sm-3 col-lg-2">
+          <p class="font-weight-bold">發文公司</p>
+        </div>
+        <div class="col">
+          <p>{{ doc.comp.fullname }}</p>
+        </div>
+      </div>
+      <div class="row my-3">
+        <div class="col-sm-3 col-lg-2">
+          <p class="font-weight-bold">發文單位</p>
+        </div>
+        <div class="col-sm-3 col-lg-4">
+          <p>{{ doc.dept.fullname }}</p>
+        </div>
+        <div class="col-sm-3 col-lg-2">
+          <p class="font-weight-bold">發文者</p>
+        </div>
+        <div class="col-sm-3 col-lg-4">
+          <p>{{ doc.author.last_name }}{{ doc.author.first_name }}</p>
+        </div>
+      </div>
+      <div class="row my-3">
+        <div class="col-sm-3 col-lg-2">
+          <p class="font-weight-bold">發文字號</p>
+        </div>
+        <div class="col">
+          <div id="sn_div" class="font-weight-bold text-danger">{{ doc.fullsn }}</div>
+          <div role="button" id="copysn_div" class="btn btn-sm btn-primary">複製到剪貼簿</div>
+        </div>
+      </div>
+      <div class="row my-3">
+        <div class="col-sm-3 col-lg-2">
+          <p class="font-weight-bold">摘要</p>
+        </div>
+        <div class="col">
+          <p>{{ doc.title }}</p>
+        </div>
+      </div>
+      <a href="{% url 'Doc_index' %}"><div role="button" class="btn btn-danger">返回公文列表</div></a>
+    </div>
+
+  </section>
+  <script>
+    $(document).ready(function() {
+        $(document).on('click', '#copysn_div', function () {
+            let sndiv = document.getElementById('sn_div')
+            let selection = window.getSelection();
+            let range = document.createRange();
+            range.selectNode(sndiv);
+            selection.removeAllRanges();
+            selection.addRange(range)
+            document.execCommand("copy");
+            alert("公文編號：'{{ doc.fullsn }}' 已複製進剪貼簿。")
+            selection.removeAllRanges();
+        });
+    });
+  </script>
+{% endblock %}

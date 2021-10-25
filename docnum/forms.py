@@ -11,8 +11,8 @@ class AddDocForm(forms.ModelForm):
             'comp': forms.Select(attrs={'class': 'custom-select'}),
             'dept': forms.Select(attrs={'class': 'custom-select'}),
             'author': forms.Select(attrs={'class': 'custom-select'}),
-            'sn': forms.TextInput(attrs={'class': 'form-control-plaintext', 'readonly': True}),
-            'fullsn': forms.TextInput(attrs={'class': 'form-control-plaintext', 'readonly': True}),
+            'sn': forms.TextInput(attrs={'class': 'form-control-plaintext'}),
+            'fullsn': forms.TextInput(attrs={'class': 'form-control-plaintext'}),
             'pubdate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'title': forms.Textarea(attrs={'class': 'form-control'}),
+            'title': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }

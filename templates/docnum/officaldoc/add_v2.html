@@ -1,0 +1,80 @@
+{% extends 'frame/base.html' %}
+
+{% block title %}新增公文 - 寶晶紙本公文{% endblock %}
+{% block scripts %}
+  <script src="/static/custom/getDocNum.js"></script>
+{% endblock %}
+{% block content %}
+  <section id="doclist" class="py-3">
+    <div class="container py-3">
+      <h1 class="my-3">新增公文</h1>
+      <div class="row">
+        <div class="col-12">
+          <div id="msg" class="text-danger"></div>
+          <div class="text-danger">
+            {% if form.errors %}
+              {% for field in form %}
+                {% for error in field.errors %}
+                  <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                  </div>
+                {% endfor %}
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-12">
+          <form method="POST" class="needs-validation" onsubmit="" novalidate>
+            <div class="form-row">
+              {% csrf_token %}
+              <div class="col-12 my-2">{{ form.non_field_errors }}</div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  <label for="id_{{ form.pubdate.name }}">發文日期</label>
+                  {{ form.pubdate }}
+                  <div class="invalid-feedback">
+                    {{ form.pubdate.errors }}
+                    請選擇日期
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  <label for="id_{{ form.comp.name }}">發文公司</label>
+                  {{ form.comp }}
+                  <div class="invalid-feedback">
+                    {{ form.comp.errors }}
+                    請選擇發文公司
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  <label for="id_{{ form.dept.name }}">發文單位</label>
+                  {{ form.dept }}
+                  <div class="invalid-feedback">
+                    {{ form.dept.errors }}
+                    請選擇發文單位
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-group">
+                  <label for="id_{{ form.title.name }}">公文主旨</label>
+                  {{ form.title }}
+                  <div class="invalid-feedback">
+                    {{ form.title.errors }}
+                    請輸入公文主旨
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary">送出</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
