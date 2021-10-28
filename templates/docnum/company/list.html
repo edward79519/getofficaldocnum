@@ -1,27 +1,48 @@
 {% extends 'frame/base.html' %}
 
 {% block title %}公司列表 - 寶晶紙本公文{% endblock %}
+{% block css %}
+  <link href="/static/custom/page.css" rel="stylesheet">
+{% endblock %}
+{% block scripts %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+    <script>
+      var options = {
+        valueNames: [ 'name', 'shortname', 'cnt'],
+        page: 10,
+        pagination: [{
+            name: "pagination",
+            paginationClass: "pagination",
+            innerWindow: 1,
+            outerWindow: 1,
+        }],
+      };
+
+      /*table = id of the div */
+      var userList = new List('table', options);
+    </script>
+{% endblock %}
 {% block content %}
   <section id="doclist" class="py-3">
     <div class="container py-3">
       <h1 class="my-3">公司一覽</h1>
       <div class="row">
         <div class="col-5">
-          <div class="table-responsive">
+          <div class="table-responsive" id="table">
             <table class="table table-hover">
               <thead>
                 <tr>
-                  <th scope="col">公司名稱</th>
-                  <th scope="col">簡稱</th>
-                  <th scope="col" class="text-center">公文數量</th>
+                  <th scope="col" class="sort" data-sort="name">公司名稱</th>
+                  <th scope="col" class="sort fit" data-sort="shortname">簡稱</th>
+                  <th scope="col" class="sort text-center" data-sort="cnt">公文數量</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="list">
                 {% for comp in comp_list %}
                 <tr>
-                  <td><a href="{% url 'Comp_detail' comp.id %}">{{ comp.fullname }}</a></td>
-                  <td>{{ comp.shortname }}</td>
-                  <td class="text-center">{{ comp.officaldocs.count }}</td>
+                  <td class="name"><a href="{% url 'Comp_detail' comp.id %}">{{ comp.fullname }}</a></td>
+                  <td class="shortname">{{ comp.shortname }}</td>
+                  <td class="cnt text-center nonfit">{{ comp.officaldocs.count }}</td>
                 </tr>
                 {% empty %}
                   <tr>
@@ -30,6 +51,9 @@
                 {% endfor %}
               </tbody>
             </table>
+            <nav aria-label="Page navigation">
+              <ul class="pagination"></ul>
+            </nav>
           </div>
         </div>
       </div>

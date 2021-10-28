@@ -1,40 +1,67 @@
 {% extends 'frame/base.html' %}
 
 {% block title %}{{ comp.fullname }} - 寶晶紙本公文{% endblock %}
+{% block css %}
+  <link href="/static/custom/page.css" rel="stylesheet">
+{% endblock %}
+{% block scripts %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+    <script>
+      var options = {
+        valueNames: [ 'pubdate', 'company', 'dept', 'fullsn', 'name', 'abstract', 'addtime' ],
+        page: 10,
+        pagination: [{
+            name: "pagination",
+            paginationClass: "pagination",
+            innerWindow: 1,
+            outerWindow: 1,
+        }],
+      };
+
+      /*table = id of the div */
+      var userList = new List('table', options);
+    </script>
+{% endblock %}
 {% block content %}
   <section id="doclist" class="py-3">
     <div class="container py-3">
       <h1 class="my-3">{{ comp.fullname }} - 公文一覽</h1>
-      <div class="col-12 my-3">
-        <a role="button" class="btn btn-primary" href="{% url 'Doc_add' %}?comp_id={{ comp.id }}">新增</a>
-        <a role="button" class="btn btn-secondary" href="{% url 'Comp_index' %}?comp_id={{ comp.id }}">回公司列表</a>
-        <a role="button" class="btn btn-secondary" href="{% url 'Doc_index' %}">回公文列表</a>
-      </div>
       <div class="row">
+        <div class="col-12 my-3">
+          <a role="button" class="btn btn-primary" href="{% url 'Doc_add' %}?comp_id={{ comp.id }}">新增</a>
+          <a role="button" class="btn btn-secondary" href="{% url 'Comp_index' %}?comp_id={{ comp.id }}">回公司列表</a>
+          <a role="button" class="btn btn-secondary" href="{% url 'Doc_index' %}">回公文列表</a>
+        </div>
         <div class="col-12">
-          <div class="table-responsive">
+          <div class="table-responsive" id="table">
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">搜尋...</span>
+              </div>
+              <input type="text" class="fuzzy-search form-control" placeholder="輸入關鍵字" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
             <table class="table table-hover">
               <thead>
                 <tr>
-                  <th scope="col">發文日期</th>
-                  <th scope="col">公司</th>
-                  <th scope="col">部門</th>
-                  <th scope="col">發文字號</th>
-                  <th scope="col">發文人</th>
-                  <th scope="col" style="width: 30%">主旨</th>
-                  <th scope="col">新增日期</th>
+                  <th scope="col" class="sort" data-sort="pubdate">發文日期</th>
+                  <th scope="col" class="sort fit" data-sort="company">公司</th>
+                  <th scope="col" class="sort" data-sort="dept">部門</th>
+                  <th scope="col" class="sort" data-sort="fullsn">發文字號</th>
+                  <th scope="col" class="sort fit" data-sort="name">發文人</th>
+                  <th scope="col" class="sort" data-sort="abstract">主旨</th>
+                  <th scope="col" class="sort" data-sort="addtime">新增日期</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="list">
                 {% for doc in doc_list %}
                 <tr>
-                  <td>{{ doc.pubdate|date:"Y-m-d" }}</td>
-                  <td>{{ doc.comp.shortname }}</td>
-                  <td>{{ doc.dept }}</td>
-                  <td>{{ doc.fullsn }}</td>
-                  <td><a href="{% url 'Doc_add_result' doc.id %}">{{ doc.fullsn }}</a></td>
-                  <td>{{ doc.title }}</td>
-                  <td>{{ doc.addtime|date:"Y-m-d" }}</td>
+                  <td class="pubdate">{{ doc.pubdate|date:"Y-m-d" }}</td>
+                  <td class="company nonfit">{{ doc.comp.shortname }}</td>
+                  <td class="dept">{{ doc.dept }}</td>
+                  <td class="fullsn">{{ doc.fullsn }}</td>
+                  <td class="name"><a href="{% url 'Doc_add_result' doc.id %}">{{ doc.fullsn }}</a></td>
+                  <td class="abstract nonfit">{{ doc.title }}</td>
+                  <td class="addtime">{{ doc.addtime|date:"Y-m-d" }}</td>
                 </tr>
                 {% empty %}
                   <tr>
@@ -43,6 +70,9 @@
                 {% endfor %}
               </tbody>
             </table>
+            <nav aria-label="Page navigation">
+              <ul class="pagination"></ul>
+            </nav>
           </div>
         </div>
       </div>
