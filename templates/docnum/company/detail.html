@@ -58,8 +58,8 @@
                   <td class="pubdate">{{ doc.pubdate|date:"Y-m-d" }}</td>
                   <td class="company nonfit">{{ doc.comp.shortname }}</td>
                   <td class="dept">{{ doc.dept }}</td>
-                  <td class="fullsn">{{ doc.fullsn }}</td>
-                  <td class="name"><a href="{% url 'Doc_add_result' doc.id %}">{{ doc.fullsn }}</a></td>
+                  <td class="fullsn"><a href="{% url 'Doc_add_result' doc.id %}">{{ doc.fullsn }}</a></td>
+                  <td class="name">{{ doc.author.last_name }}{{ doc.author.first_name }}</td>
                   <td class="abstract nonfit">{{ doc.title }}</td>
                   <td class="addtime">{{ doc.addtime|date:"Y-m-d" }}</td>
                 </tr>
