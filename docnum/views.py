@@ -1,3 +1,6 @@
+import csv
+import datetime
+
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.contrib.auth.decorators import login_required
@@ -154,3 +157,28 @@ def doc_result(request, id_docnum):
         'doc': doc,
     }
     return HttpResponse(template.render(context, request))
+
+
+@login_required
+def export_file(request):
+    alldata = OfficalDoc.objects.all().values_list('pubdate', 'comp__fullname', 'dept__fullname', 'fullsn',
+                                                   'author__last_name', 'author__first_name', 'title', 'addtime')
+    data_list = []
+    for data in alldata:
+        data_row = []
+        for field in data:
+            if type(field) is not str:
+                data_row.append(field.strftime('%Y-%m-%d'))
+            else:
+                data_row.append(field)
+        data_list.append(data_row)
+    column_name = ['發文日期', '公司名稱', '發文部門', '發文字號', '發文人_姓', '發文人_名', '發文主旨', '新增日期']
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="OfficialDocList_{}.csv"'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))
+
+    writer = csv.writer(response)
+    writer.writerow(column_name)
+    writer.writerows(data_list)
+
+    return response
