@@ -48,21 +48,21 @@
               </div>
               <div class="col-12 col-md-3">
                 <div class="form-group">
-                  <label for="id_{{ form.sendsn.name }}">來函字號</label>
-                  {{ form.sendsn }}
-                  <div class="invalid-feedback">
-                    {{ form.sendsn.errors }}
-                    請填寫來函字號
-                  </div>
-                </div>
-              </div>
-              <div class="col-12 col-md-3">
-                <div class="form-group">
                   <label for="id_{{ form.rcvcomp.name }}">收文機關</label>
                   {{ form.rcvcomp }}
                   <div class="invalid-feedback">
                     {{ form.rcvcomp.errors }}
                     請選擇受文機關
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  <label for="id_{{ form.sendsn.name }}">來函字號</label>
+                  {{ form.sendsn }}
+                  <div class="invalid-feedback">
+                    {{ form.sendsn.errors }}
+                    請填寫來函字號
                   </div>
                 </div>
               </div>
