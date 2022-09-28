@@ -1,0 +1,85 @@
+{% extends 'frame/base.html' %}
+{% load docnum_extra %}
+{% block title %}發文列表 - 寶晶紙本公文{% endblock %}
+{% block css %}
+  <link href="/static/custom/page.css" rel="stylesheet">
+{% endblock %}
+{% block scripts %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+    <script>
+      var options = {
+        valueNames: [ 'pubdate', 'company', 'dept', 'fullsn', 'name', 'abstract', 'addtime' ],
+        page: 10,
+        pagination: [{
+            name: "pagination",
+            paginationClass: "pagination",
+            innerWindow: 1,
+            outerWindow: 1,
+        }],
+      };
+
+      /*table = id of the div */
+      var userList = new List('table', options);
+    </script>
+{% endblock %}
+{% block content %}
+  <section id="doclist" class="py-3">
+    <div class="container py-3">
+      <h1 class="my-3">發文一覽</h1>
+      <div class="row">
+        <div class="col-6 my-3">
+          <a role="button" class="btn btn-primary" href="{% url 'Doc_add' %}">新增發文</a>
+        </div>
+        <div class="col-6 my-3 text-right">
+          {% if user|has_group:"OffDoc Manager" %}
+            <a role="button" class="btn btn-secondary" href="{% url 'Send_Export' %}">匯出發文總表</a>
+          {% endif %}
+        </div>
+        <div class="col-12">
+          <div class="table-responsive" id="table">
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">搜尋發文...</span>
+              </div>
+              <input type="text" class="search form-control" placeholder="輸入關鍵字" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col" class="sort" data-sort="pubdate">發文日期</th>
+                  <th scope="col" class="sort fit" data-sort="company">公司</th>
+                  <th scope="col" class="sort" data-sort="dept">部門</th>
+                  <th scope="col" class="sort" data-sort="fullsn">發文字號</th>
+                  <th scope="col" class="sort fit" data-sort="name">發文人</th>
+                  <th scope="col" class="sort" data-sort="abstract">主旨</th>
+                  <th scope="col" class="sort" data-sort="addtime">新增日期</th>
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for doc in doc_list %}
+                <tr>
+                  <td class="pubdate">{{ doc.pubdate|date:"Y-m-d" }}</td>
+                  <td class="company nonfit"><a href="{% url 'Comp_detail' doc.comp.id %}">{{ doc.comp.shortname }}</a></td>
+                  <td class="dept">{{ doc.dept }}</td>
+                  <td class="fullsn"><a href="{% url 'Doc_add_result' doc.id %}">{{ doc.fullsn }}</a></td>
+                  <td class="name">{{ doc.author.last_name }}{{ doc.author.first_name }}</td>
+                  <td class="abstract nonfit">{{ doc.title }}</td>
+                  <td class="addtime">{{ doc.addtime|date:"Y-m-d" }}</td>
+                </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="7" class="text-center"> 目前沒有公文或沒有權限觀看。 </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <nav aria-label="Page navigation">
+              <ul class="pagination"></ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}

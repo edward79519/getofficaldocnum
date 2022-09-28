@@ -8,7 +8,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
     <script>
       var options = {
-        valueNames: [ 'name', 'shortname', 'cnt'],
+        valueNames: [ 'name', 'shortname', 'cnt', 'rcvcnt'],
         page: 10,
         pagination: [{
             name: "pagination",
@@ -19,7 +19,7 @@
       };
 
       /*table = id of the div */
-      var userList = new List('table', options);
+      var userList = new List('comp_table', options);
     </script>
 {% endblock %}
 {% block content %}
@@ -27,39 +27,43 @@
     <div class="container py-3">
       <h1 class="my-3">公司一覽</h1>
       <div class="row">
-        <div class="col-5">
-          <div class="table-responsive" id="table">
-            <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text" id="basic-addon1">搜尋...</span>
+        <div class="col-6">
+          <div  id="comp_table">
+            <div class="table-responsive">
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon1">搜尋...</span>
+                </div>
+                <input type="text" class="search form-control" placeholder="輸入關鍵字" aria-label="Username" aria-describedby="basic-addon1">
               </div>
-              <input type="text" class="fuzzy-search form-control" placeholder="輸入關鍵字" aria-label="Username" aria-describedby="basic-addon1">
-            </div>
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th scope="col" class="sort" data-sort="name">公司名稱</th>
-                  <th scope="col" class="sort fit" data-sort="shortname">簡稱</th>
-                  <th scope="col" class="sort text-center" data-sort="cnt">公文數量</th>
-                </tr>
-              </thead>
-              <tbody class="list">
-                {% for comp in comp_list %}
-                <tr>
-                  <td class="name"><a href="{% url 'Comp_detail' comp.id %}">{{ comp.fullname }}</a></td>
-                  <td class="shortname">{{ comp.shortname }}</td>
-                  <td class="cnt text-center nonfit">{{ comp.officaldocs.count }}</td>
-                </tr>
-                {% empty %}
+              <table class="table table-hover">
+                <thead>
                   <tr>
-                    <td colspan="6"> Empty </td>
+                    <th scope="col" class="sort" data-sort="name">公司名稱</th>
+                    <th scope="col" class="sort fit" data-sort="shortname">簡稱</th>
+                    <th scope="col" class="sort fit text-center" data-sort="cnt">發文數量</th>
+                    <th scope="col" class="sort fit text-center" data-sort="rcvcnt">收文數量</th>
                   </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            <nav aria-label="Page navigation">
-              <ul class="pagination"></ul>
-            </nav>
+                </thead>
+                <tbody class="list">
+                  {% for comp in comp_list %}
+                  <tr>
+                    <td class="name"><a href="{% url 'Comp_detail' comp.id %}">{{ comp.fullname }}</a></td>
+                    <td class="shortname">{{ comp.shortname }}</td>
+                    <td class="cnt text-center">{{ comp.officaldocs.count }}</td>
+                    <td class="rcvcnt text-center">{{ comp.receivedocs.count }}</td>
+                  </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="6"> Empty </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <nav aria-label="Page navigation">
+                <ul class="pagination"></ul>
+              </nav>
+            </div>
           </div>
         </div>
       </div>
