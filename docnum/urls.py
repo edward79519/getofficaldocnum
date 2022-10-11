@@ -4,6 +4,11 @@ from . import views, ajax
 urlpatterns = [
     path('company/', views.comp_list, name="Comp_index"),
     path('company/<int:comp_id>/', views.comp_detail, name="Comp_detail"),
+    path('company/<int:comp_id>/switch/', views.switch_comp, name="Comp_switch"),
+    path('company/<int:comp_id>/delete/', views.comp_del, name="Comp_delete"),
+    path('department/', views.dept_list, name="Dept_list"),
+    path('departnemt/<int:dept_id>/switch/', views.switch_dept, name="Dept_switch"),
+    path('departnemt/<int:dept_id>/delete/', views.dept_del, name="Dept_delete"),
     path('ajax/getdocnum/', ajax.getdocnum),
     path('send/', views.doc_list, name="Doc_index"),
     path('send/export/', views.send_export, name="Send_Export"),

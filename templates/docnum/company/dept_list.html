@@ -1,0 +1,88 @@
+{% extends 'frame/base.html' %}
+{% load docnum_extra %}
+{% block title %}部門目錄 - 寶晶紙本公文{% endblock %}
+{% block content %}
+  <section class="py-3">
+    <div class="container py-3">
+      <h1 class="my-3">部門目錄</h1>
+      <div class="row">
+        <div class="col-8">
+          <div class="table-responsive">
+            <a class="btn btn-primary my-3" href="{% url 'Comp_index' %}">回公司列表</a>
+            <form method="POST" class="needs-validation" onsubmit="" novalidate>
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col" class="sort fit" data-sort="name">部門名稱</th>
+                    <th scope="col" class="sort" data-sort="shortname">簡稱</th>
+                    <th scope="col" class="sort text-center">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for dept in dept_list %}
+                    <tr {% if not dept.valid %}class="table-secondary"{% endif %}>
+                      <td>
+                        {{ dept.fullname }}
+                      </td>
+                      <td>
+                        {{ dept.shortname }}
+                      </td>
+                      <td class="nowrap">
+                        {% if user|has_group:"OffDoc Manager" %}
+                          {% if dept.valid == True %}
+                            <a class="btn btn-sm btn-danger align-self-center" href="{% url 'Dept_switch' dept.id %}">關閉</a>
+                          {% else %}
+                            <a class="btn btn-sm btn-primary align-self-center" href="{% url 'Dept_switch' dept.id %}">開啟</a>
+                            {% if dept.officaldocs.count == 0 %}
+                              <a class="delconfirm btn btn-sm btn-danger align-self-center" href="{% url 'Dept_delete' dept.id %}">刪除</a>
+                            {% endif %}
+                          {% endif %}
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="3" class="text-center"> No Data. </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                {% if user|has_group:"OffDoc Manager" %}
+                  <tfoot>
+                    <tr>
+                      <td>
+                        {% csrf_token %}
+                        <div class="form-group">
+                          {{ form.fullname }}
+                          <small class="form-text text-muted">輸入部門全名</small>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="form-group">
+                          {{ form.shortname }}
+                        <small class="form-text text-muted">輸入部門簡稱</small>
+                      </div>
+                      </td>
+                      <td colspan="3">
+                        <button type="submit" class="btn btn-primary">新增</button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                {% endif %}
+              </table>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script type="text/javascript">
+  $(document).ready(
+      $('#id_shortname').attr('maxlength', 1)
+  );
+    $('.delconfirm').on('click', function () {
+        console.log();
+        let compName = $(this).parent().parent().children().first().text();
+        return confirm("確定刪除「" + compName + "」?");
+    });
+  </script>
+{% endblock %}

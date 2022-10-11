@@ -1,5 +1,5 @@
 from django import forms
-from .models import OfficalDoc, ReceiveDoc
+from .models import OfficalDoc, ReceiveDoc, Company, Department
 
 
 class AddDocForm(forms.ModelForm):
@@ -32,4 +32,26 @@ class AddReceiveDocForm(forms.ModelForm):
             'abstract': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'rcvcomp': forms.Select(attrs={'class': 'custom-select'}),
             'author': forms.Select(attrs={'class': 'custom-select'}),
+        }
+
+
+class AddCompanyForm(forms.ModelForm):
+
+    class Meta:
+        model = Company
+        fields = ['fullname', 'shortname']
+        widgets = {
+            'fullname': forms.TextInput(attrs={'class': 'form-control'}),
+            'shortname': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 2}),
+        }
+
+
+class AddDepartmentForm(forms.ModelForm):
+
+    class Meta:
+        model = Department
+        fields = ['fullname', 'shortname']
+        widgets = {
+            'fullname': forms.TextInput(attrs={'class': 'form-control'}),
+            'shortname': forms.TextInput(attrs={'class': 'form-control'}),
         }

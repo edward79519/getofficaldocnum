@@ -6,7 +6,7 @@ from django.template import loader
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from .models import OfficalDoc, Company, Department, ReceiveDoc
-from .forms import AddDocForm, AddReceiveDocForm
+from .forms import AddDocForm, AddReceiveDocForm, AddCompanyForm, AddDepartmentForm
 from django.db import transaction, DatabaseError
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -29,12 +29,12 @@ def index(request):
 def doc_list(request):
     mngr_group = Group.objects.get(name=MNGR_GROUP)
     if mngr_group in request.user.groups.all():
-        doc_list = OfficalDoc.objects.all().order_by("-addtime")
+        docs = OfficalDoc.objects.all().order_by("-addtime")
     else:
-        doc_list = OfficalDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
+        docs = OfficalDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
     templates = loader.get_template('docnum/officaldoc/send_list.html')
     context = {
-        'doc_list': doc_list,
+        'doc_list': docs,
     }
     return HttpResponse(templates.render(context, request))
 
@@ -64,12 +64,40 @@ def doc_add(request):
 
 
 def comp_list(request):
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
     comps = Company.objects.all()
     template = loader.get_template("docnum/company/list.html")
+    form = AddCompanyForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            if mngr_group in request.user.groups.all():
+                form.save()
+                messages.add_message(request, messages.SUCCESS, "新增成功！")
+            else:
+                messages.add_message(request, messages.ERROR, "你無此權限操作！")
+            return redirect('Comp_index')
     context = {
         'comp_list': comps,
+        'form': form,
     }
     return HttpResponse(template.render(context, request))
+
+
+@login_required
+def comp_del(request, comp_id):
+    comp = Company.objects.get(id=comp_id)
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    if mngr_group in request.user.groups.all():
+        if comp.officaldocs.count() == 0 and comp.receivedocs.count() == 0:
+            comp.delete()
+            messages.add_message(request, messages.SUCCESS, "刪除成功！")
+            return redirect('Comp_index')
+        else:
+            messages.add_message(request, messages.ERROR, "有關聯的檔案不能刪除！")
+            return redirect('Comp_index')
+    else:
+        messages.add_message(request, messages.ERROR, "你無此操作權限！")
+        return redirect('Comp_index')
 
 
 @login_required
@@ -77,16 +105,16 @@ def comp_detail(request, comp_id):
     mngr_group = Group.objects.get(name=MNGR_GROUP)
     comp = Company.objects.get(id=comp_id)
     if mngr_group in request.user.groups.all():
-        doc_list = OfficalDoc.objects.filter(comp_id=comp_id).order_by("-addtime")
-        rcv_list = ReceiveDoc.objects.filter(rcvcomp_id=comp_id).order_by("-addtime")
+        docs = OfficalDoc.objects.filter(comp_id=comp_id).order_by("-addtime")
+        rcvs = ReceiveDoc.objects.filter(rcvcomp_id=comp_id).order_by("-addtime")
     else:
-        doc_list = OfficalDoc.objects.filter(comp_id=comp_id, author_id=request.user.id).order_by("-addtime")
-        rcv_list = ReceiveDoc.objects.filter(rcvcomp=comp_id, author_id=request.user.id).order_by("-addtime")
+        docs = OfficalDoc.objects.filter(comp_id=comp_id, author_id=request.user.id).order_by("-addtime")
+        rcvs = ReceiveDoc.objects.filter(rcvcomp=comp_id, author_id=request.user.id).order_by("-addtime")
     template = loader.get_template("docnum/company/detail.html")
     context = {
         'comp': comp,
-        'doc_list': doc_list,
-        'rcv_list': rcv_list,
+        'doc_list': docs,
+        'rcv_list': rcvs,
     }
     return HttpResponse(template.render(context, request))
 
@@ -145,6 +173,8 @@ def doc_add_v2(request):
             print(e)
     else:
         form = AddDocForm()
+        form.fields["comp"].queryset = Company.objects.filter(valid=True)
+        form.fields["dept"].queryset = Department.objects.filter(valid=True)
         # 從公司頁面點選進入時，自動帶入公司名稱。
         if request.GET.get("comp_id"):
             form.fields["comp"].initial = Company.objects.get(id=request.GET.get("comp_id"))
@@ -215,12 +245,12 @@ def get_rcvdocnum(id_comp, pubdate):
 def receivedoc_list(request):
     mngr_group = Group.objects.get(name=MNGR_GROUP)
     if mngr_group in request.user.groups.all():
-        doc_list = ReceiveDoc.objects.all().order_by("-addtime")
+        docs = ReceiveDoc.objects.all().order_by("-addtime")
     else:
-        doc_list = ReceiveDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
+        docs = ReceiveDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
     templates = loader.get_template('docnum/officaldoc/receive_list.html')
     context = {
-        'doc_list': doc_list,
+        'doc_list': docs,
     }
     return HttpResponse(templates.render(context, request))
 
@@ -237,12 +267,14 @@ def receivedoc_add(request):
         post_copy['fullsn'] = sn_data['full_sn']
         post_copy['author'] = request.user.id
         form = AddReceiveDocForm(post_copy)
+        form.fields["rcvcomp"].queryset = Company.objects.filter(valid=True)
         if form.is_valid():
             rcvdoc = form.save()
             messages.add_message(request, messages.SUCCESS, "新增成功！")
             return redirect('Receive_result', id_rcvdoc=rcvdoc.id)
     else:
         form = AddReceiveDocForm()
+        form.fields["rcvcomp"].queryset = Company.objects.filter(valid=True)
         if request.GET.get('comp_id'):
             form.fields['rcvcomp'].initial = request.GET.get('comp_id')
     context = {
@@ -286,3 +318,65 @@ def receive_export(request):
     writer.writerows(data_list)
 
     return response
+
+
+@login_required
+def switch_comp(request, comp_id):
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    if mngr_group in request.user.groups.all():
+        comp = Company.objects.get(id=comp_id)
+        comp.valid = not comp.valid
+        comp.save()
+        return redirect('Comp_index')
+    else:
+        return HttpResponse("你無操作此權限，請返回上一頁")
+
+
+@login_required
+def dept_list(request):
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    depts = Department.objects.all()
+    template = loader.get_template('docnum/company/dept_list.html')
+    form = AddDepartmentForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            if mngr_group in request.user.groups.all():
+                form.save()
+                messages.add_message(request, messages.SUCCESS, "新增成功！")
+            else:
+                messages.add_message(request, messages.ERROR, "你無此權限操作！")
+            return redirect('Dept_list')
+    context = {
+        'dept_list': depts,
+        'form': form,
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def dept_del(request, dept_id):
+    dept = Department.objects.get(id=dept_id)
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    if mngr_group in request.user.groups.all():
+        if dept.officaldocs.count() == 0:
+            dept.delete()
+            messages.add_message(request, messages.SUCCESS, "刪除成功！")
+            return redirect('Dept_list')
+        else:
+            messages.add_message(request, messages.ERROR, "有關聯的檔案不能刪除！")
+            return redirect('Dept_list')
+    else:
+        messages.add_message(request, messages.ERROR, "你無此操作權限！")
+        return redirect('Dept_list')
+
+
+@login_required
+def switch_dept(request, dept_id):
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    if mngr_group in request.user.groups.all():
+        dept = Department.objects.get(id=dept_id)
+        dept.valid = not dept.valid
+        dept.save()
+        return redirect('Dept_list')
+    else:
+        return HttpResponse("你無操作此權限，請返回上一頁")

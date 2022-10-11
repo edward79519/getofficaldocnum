@@ -1,5 +1,5 @@
 {% extends 'frame/base.html' %}
-
+{% load docnum_extra %}
 {% block title %}公司列表 - 寶晶紙本公文{% endblock %}
 {% block css %}
   <link href="/static/custom/page.css" rel="stylesheet">
@@ -27,39 +27,92 @@
     <div class="container py-3">
       <h1 class="my-3">公司一覽</h1>
       <div class="row">
-        <div class="col-6">
-          <div  id="comp_table">
+        <div class="col-12">
+          <div id="msg" class="text-danger"></div>
+          <div class="text-danger">
+            {% if messages %}
+              {% for message in messages %}
+                <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
+                  {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-9">
+          <div id="comp_table">
             <div class="table-responsive">
+              {% if user|has_group:"OffDoc Manager" %}
+                <a class="btn btn-primary my-3" href="{% url 'Dept_list' %}">部門列表</a>
+              {% endif %}
               <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="basic-addon1">搜尋...</span>
                 </div>
                 <input type="text" class="search form-control" placeholder="輸入關鍵字" aria-label="Username" aria-describedby="basic-addon1">
               </div>
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th scope="col" class="sort" data-sort="name">公司名稱</th>
-                    <th scope="col" class="sort fit" data-sort="shortname">簡稱</th>
-                    <th scope="col" class="sort fit text-center" data-sort="cnt">發文數量</th>
-                    <th scope="col" class="sort fit text-center" data-sort="rcvcnt">收文數量</th>
-                  </tr>
-                </thead>
-                <tbody class="list">
-                  {% for comp in comp_list %}
-                  <tr>
-                    <td class="name"><a href="{% url 'Comp_detail' comp.id %}">{{ comp.fullname }}</a></td>
-                    <td class="shortname">{{ comp.shortname }}</td>
-                    <td class="cnt text-center">{{ comp.officaldocs.count }}</td>
-                    <td class="rcvcnt text-center">{{ comp.receivedocs.count }}</td>
-                  </tr>
-                  {% empty %}
+              <form method="POST" class="needs-validation" onsubmit="" novalidate>
+                <table class="table table-hover">
+                  <thead>
                     <tr>
-                      <td colspan="6"> Empty </td>
+                      <th scope="col" class="sort" data-sort="name">公司名稱</th>
+                      <th scope="col" class="sort fit" data-sort="shortname">簡稱</th>
+                      <th scope="col" class="sort fit text-center" data-sort="cnt">發文數量</th>
+                      <th scope="col" class="sort fit text-center" data-sort="rcvcnt">收文數量</th>
+                      <th scope="col" class="text-center">操作</th>
                     </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody class="list">
+                    {% for comp in comp_list %}
+                    <tr {% if not comp.valid %}class="table-secondary"{% endif %}>
+                      <td class="name"><a href="{% url 'Comp_detail' comp.id %}">{{ comp.fullname }}</a></td>
+                      <td class="shortname">{{ comp.shortname }}</td>
+                      <td class="cnt text-center">{{ comp.officaldocs.count }}</td>
+                      <td class="rcvcnt text-center">{{ comp.receivedocs.count }}</td>
+                      <td class="nowrap">
+                        {% if user|has_group:"OffDoc Manager" %}
+                          {% if comp.valid == True %}
+                            <a class="btn btn-sm btn-danger align-self-center" href="{% url 'Comp_switch' comp.id %}">關閉</a>
+                          {% else %}
+                            <a class="btn btn-sm btn-primary align-self-center" href="{% url 'Comp_switch' comp.id %}">開啟</a>
+                            {% if comp.officaldocs.count == 0 and comp.receivedocs.count == 0 %}
+                              <a class="delconfirm btn btn-sm btn-danger align-self-center" href="{% url 'Comp_delete' comp.id %}">刪除</a>
+                            {% endif %}
+                          {% endif %}
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="5"> No Data. </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                  {% if user|has_group:"OffDoc Manager" %}
+                    <tfoot>
+                      <tr>
+                        <th>
+                          {% csrf_token %}
+                          <div class="form-group">
+                            {{ form.fullname }}
+                            <small class="form-text text-muted">輸入公司全名</small>
+                          </div>
+                        </th>
+                        <th colspan="3">
+                          <div class="form-group">
+                            {{ form.shortname }}
+                            <small class="form-text text-muted">輸入公司簡稱</small>
+                          </div>
+                        </th>
+                        <th colspan="5">
+                          <button type="submit" class="btn btn-primary nowrap">新增</button>
+                        </th>
+                      </tr>
+                    </tfoot>
+                  {% endif %}
+                </table>
+              </form>
               <nav aria-label="Page navigation">
                 <ul class="pagination"></ul>
               </nav>
@@ -69,4 +122,14 @@
       </div>
     </div>
   </section>
+  <script type="text/javascript">
+    $(document).ready(
+      $('#id_shortname').attr('maxlength', 2)
+    );
+    $('.delconfirm').on('click', function () {
+        console.log();
+        let compName = $(this).parent().parent().children(".name").text();
+        return confirm("確定刪除「" + compName + "」?");
+    });
+  </script>
 {% endblock %}
