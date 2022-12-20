@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from simple_history.models import HistoricalRecords
 
 # Create your models here.
 
@@ -80,3 +81,29 @@ class ReceiveDoc(models.Model):
 
     def __str__(self):
         return self.fullsn
+
+
+class BaseModel(models.Model):
+    changed_by = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    is_valid = models.BooleanField(default=True)
+    add_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
+
+    class Meta:
+        abstract = True
+
+
+class ContractCate(BaseModel):
+    sn = models.IntegerField(max_length=3, unique=True, primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
+
+
