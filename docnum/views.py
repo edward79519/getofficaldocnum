@@ -5,24 +5,19 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
-from .models import OfficalDoc, Company, Department, ReceiveDoc
-from .forms import AddDocForm, AddReceiveDocForm, AddCompanyForm, AddDepartmentForm
+from .models import OfficalDoc, Company, Department, ReceiveDoc, Contract, ContractStatus
+from .forms import AddDocForm, AddReceiveDocForm, AddCompanyForm, AddDepartmentForm, AddContractForm, UpdateContractForm
 from django.db import transaction, DatabaseError
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.utils import timezone
+from simple_history.utils import update_change_reason
 
 # Global Variable
 MNGR_GROUP = "OffDoc Manager"  # 管理單位名稱
 
 
 # Create your views here.
-
-
-def index(request):
-    template = loader.get_template('docnum/index.html')
-    context = {}
-
-    return HttpResponse(template.render(context, request))
 
 
 @login_required
@@ -380,3 +375,159 @@ def switch_dept(request, dept_id):
         return redirect('Dept_list')
     else:
         return HttpResponse("你無操作此權限，請返回上一頁")
+
+
+def get_contractsn(comp_id, cate_id, date):
+    contract_count = Contract.objects.filter(
+        comp_id=comp_id,
+        category_id=cate_id,
+        add_time__year=date.year,
+        add_time__month=date.month,
+    ).count()
+
+    contract_sn = 'C{}{}{}{}{}'.format(
+        str(comp_id).zfill(2),
+        str(cate_id).zfill(2),
+        str(date.year)[-2:],
+        str(date.month).zfill(2),
+        str(contract_count + 1).zfill(3)
+    )
+    return contract_sn
+
+
+@login_required
+def contract_add(request):
+    template = loader.get_template('docnum/contract/add.html')
+    if request.method == "POST":
+        # get form data for getting sn
+        post_copy = request.POST.copy()
+        today = timezone.localtime(timezone.now()).date()
+        comp_id = post_copy['comp']
+        cate_id = post_copy['category']
+        # fill field not in template -- changed_by, created_by, status, sn
+        post_copy['changed_by'] = request.user.id
+        post_copy['created_by'] = request.user.id
+        post_copy['status'] = 1
+        post_copy['sn'] = get_contractsn(comp_id=comp_id, cate_id=cate_id, date=today)
+        form = AddContractForm(post_copy)
+        if form.is_valid():
+            new_contra = form.save()
+            messages.add_message(request, messages.SUCCESS, "新增合約: {} 成功！".format(new_contra.sn))
+            return redirect('Contract_detail', contra_id=new_contra.id)
+    else:
+        form = AddContractForm()
+    context = {
+        'form': form,
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def contract_list(request):
+    template = loader.get_template('docnum/contract/list.html')
+    contracts = Contract.objects.filter(is_valid=True)
+    context = {
+        'contracts': contracts,
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def contract_detail(request, contra_id):
+    template = loader.get_template('docnum/contract/detail.html')
+    contract = Contract.objects.get(id=contra_id)
+    context = {
+        'contract': contract,
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def contract_update(request, contra_id):
+    template = loader.get_template('docnum/contract/update.html')
+    contract = Contract.objects.get(id=contra_id)
+    if request.method == "POST":
+        post_copy = request.POST.copy()
+        post_copy['changed_by'] = request.user.id
+        form = UpdateContractForm(post_copy, instance=contract)
+        if form.is_valid():
+            new_contract = form.save()
+            update_change_reason(new_contract, post_copy['change_reason'])
+            messages.add_message(request, messages.SUCCESS, "修改合約: {} 成功！".format(new_contract.sn))
+            return redirect('Contract_detail', contra_id=new_contract.id)
+    else:
+        form = UpdateContractForm(instance=contract)
+    context = {
+        'contract': contract,
+        'form': form,
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def contract_disable(request, contra_id):
+    contract = Contract.objects.get(id=contra_id)
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    disable_reason = request.POST['change_reason']
+
+    # 判斷是否為管理員/作者
+    is_mngr = mngr_group in request.user.groups.all()
+    is_author = request.user.id is contract.created_by.id
+    if is_author or is_mngr:
+        contract.is_valid = False
+        contract.changed_by = request.user
+        contract.save()
+        update_change_reason(contract, disable_reason)
+        messages.add_message(request, messages.SUCCESS, "作廢合約: {}-{}-{} 成功！ 原因：{}".format(
+            contract.sn, contract.comp.shortname, contract.category.name, disable_reason
+        ))
+    else:
+        return redirect('Non_auth_error')
+
+    return redirect('Contract_list')
+
+
+def non_auth_page(request):
+    err_tmp = loader.get_template('frame/error_page.html')
+    context = {
+        'error_message': '您無權限操作，請返回上一頁。'
+    }
+    return HttpResponse(err_tmp.render(context, request))
+
+
+@login_required
+def contract_confirm(request, contra_id):
+    contract = Contract.objects.get(id=contra_id)
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    is_mngr = mngr_group in request.user.groups.all()
+    is_author = request.user.id == contract.created_by.id
+    if is_author:
+        if contract.status.name == "已取號":
+            contract.status = ContractStatus.objects.get(name="已確認")
+            contract.save()
+            messages.add_message(request, messages.SUCCESS, "合約: {}-{}-{} 已確認。".format(
+                contract.sn, contract.comp.shortname, contract.category.name
+            ))
+            return redirect('Contract_detail', contra_id=contra_id)
+        elif contract.status.name == "已確認":
+            contract.status = ContractStatus.objects.get(name="已取號")
+            contract.save()
+            messages.add_message(request, messages.WARNING, "合約: {}-{}-{} 已取消確認。".format(
+                contract.sn, contract.comp.shortname, contract.category.name
+            ))
+            return redirect('Contract_detail', contra_id=contra_id)
+        else:
+            messages.add_message(request, messages.ERROR, "操作失敗，請聯絡管理員。")
+            return redirect('Contract_detail', contra_id=contra_id)
+    elif is_mngr:
+        if contract.status.name == "已確認":
+            contract.status = ContractStatus.objects.get(name="已取號")
+            contract.save()
+            messages.add_message(request, messages.WARNING, "合約: {}-{}-{} 已取消確認。".format(
+                contract.sn, contract.comp.shortname, contract.category.name
+            ))
+            return redirect('Contract_detail', contra_id=contra_id)
+        else:
+            return redirect('Non_auth_error')
+    else:
+        return redirect('Non_auth_error')

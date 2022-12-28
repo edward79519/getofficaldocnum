@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+{% extends 'frame/base.html' %}
+
+{% block title %}新增合約 - 寶晶紙本公文{% endblock %}
+{% block content %}
+  <section id="doclist" class="py-3">
+    <div class="container py-3">
+      <h1 class="my-3">新增合約</h1>
+      <div class="row">
+        <div class="col-12">
+          <div id="msg" class="text-danger"></div>
+          <div class="text-danger">
+            {% if form.errors %}
+              {% for field in form %}
+                {% for error in field.errors %}
+                  <div class="alert alert-danger">
+                    <strong>{{ field.name }} {{ error|escape }}</strong>
+                  </div>
+                {% endfor %}
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-12 mt-3">
+          <form method="POST" class="needs-validation" onsubmit="" novalidate>
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.comp.errors }}
+                  {{ form.comp.label_tag }} {{ form.comp }}
+                  <div class="invalid-feedback">
+                    請選擇公司
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.category.errors }}
+                  {{ form.category.label_tag }} {{ form.category }}
+                  <div class="invalid-feedback">
+                    請選擇合約類別
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.counterparty.errors }}
+                  {{ form.counterparty.label_tag }} {{ form.counterparty }}
+                  <div class="invalid-feedback">
+                    請填寫合約對象
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.counter_dept.errors }}
+                  {{ form.counter_dept.label_tag }} {{ form.counter_dept }}
+                  <div class="invalid-feedback">
+                    請填承辦單位
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.counter_contact.errors }}
+                  {{ form.counter_contact.label_tag }} {{ form.counter_contact }}
+                  <div class="invalid-feedback">
+                    請填承辦人
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.sign_date.errors }}
+                  {{ form.sign_date.label_tag }} {{ form.sign_date }}
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.length.errors }}
+                  {{ form.length.label_tag }} {{ form.length }}
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.start_date.errors }}
+                  {{ form.start_date.label_tag }} {{ form.start_date }}
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.end_date.errors }}
+                  {{ form.end_date.label_tag }} {{ form.end_date }}
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.total_price.errors }}
+                  {{ form.total_price.label_tag }} {{ form.total_price }}
+                  <div class="invalid-feedback">
+                    請填寫合約金額
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.tax_status.errors }}
+                  {{ form.tax_status.label_tag }} {{ form.tax_status }}
+                  <div class="invalid-feedback">
+                    選擇有無印花稅或已繳納
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.tax.errors }}
+                  {{ form.tax.label_tag }} {{ form.tax }}
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.payment.errors }}
+                  {{ form.payment.label_tag }} {{ form.payment }}
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-group">
+                  {{ form.content.errors }}
+                  {{ form.content.label_tag }} {{ form.content }}
+                  <div class="invalid-feedback">
+                    請填寫合約內容
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.manage_dept.errors }}
+                  {{ form.manage_dept.label_tag }} {{ form.manage_dept }}
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.manager.errors }}
+                  {{ form.manager.label_tag }} {{ form.manager }}
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.location.errors }}
+                  {{ form.location.label_tag }} {{ form.location }}
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="form-group">
+                  {{ form.project.errors }}
+                  {{ form.project.label_tag }} {{ form.project }}
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-group">
+                  {{ form.remark.errors }}
+                  {{ form.remark.label_tag }} {{ form.remark }}
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-12">
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#checkModal">
+                  送出
+                </button>
+              </div>
+            </div>
+            <!-- Modal -->
+            <div class="modal fade" id="checkModal" tabindex="-1" role="dialog" aria-labelledby="checkModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="checkModalLabel"><strong>確定資料是否正確？</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="row">
+                      <div class="col-4">公司名稱：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_comp"></div>
+                      <div class="col-4">合約類別：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_cate"></div>
+                      <div class="col-4">合約對象：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_counter"></div>
+                      <div class="col-4">承辦單位：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_cntrdept"></div>
+                      <div class="col-4">承辦人：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_cntrcnt"></div>
+                      <div class="col-4">合約總價：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_price"></div>
+                      <div class="col-4">印花稅：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_taxt"></div>
+                      <div class="col-4">印花稅金額：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_txtprice"></div>
+                      <div class="col-4">付款方式：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_paymnt"></div>
+                      <div class="col-4">合約主要內容：</div>
+                      <div class="col-8 font-weight-bold" id="mdl_cnt"></div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">確定送出</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+{% endblock %}
+{% block scripts %}
+  <script>
+    $(document).ready(function() {
+      $('#id_length, #id_start_date').on('change', function () {
+        let years = Number($('#id_length').val());
+        let start_date_str = $('#id_start_date').val();
+
+        let start_date = new Date(start_date_str);
+        start_date.setFullYear(start_date.getFullYear() + years);
+        let end_date_str = start_date.toISOString().substring(0, 10);
+        $('#id_end_date').val(end_date_str).attr("min", start_date_str);
+      });
+
+      $('#id_comp, #id_category, #id_tax_status, #id_manage_dept, #id_manager, #id_project').select2({
+          theme: 'bootstrap4',
+      });
+
+      $('#checkModal').on('show.bs.modal', function (event) {
+        let cmp_name = $('#select2-id_comp-container').text();
+        let cate_name = $('#select2-id_category-container').text();
+        let cntr_prty = $('#id_counterparty').val();
+        let cntr_dept = $('#id_counter_dept').val();
+        let cntr_cnct = $('#id_counter_contact').val();
+        let ttl_prc = $('#id_total_price').val();
+        let tax_tp = $('#select2-id_tax_status-container').text();
+        let tax_prc = $('#id_tax').val();
+        let pymnt = $('#id_payment').val();
+        let cnt = $('#id_content').val();
+        $('#mdl_comp').text(cmp_name);
+        $('#mdl_cate').text(cate_name);
+        $('#mdl_counter').text(cntr_prty);
+        $('#mdl_cntrdept').text(cntr_dept);
+        $('#mdl_cntrcnt').text(cntr_cnct);
+        $('#mdl_price').text(ttl_prc + ' 元');
+        $('#mdl_taxt').text(tax_tp);
+        $('#mdl_txtprice').text(tax_prc + ' 元');
+        $('#mdl_paymnt').text(pymnt);
+        $('#mdl_cnt').text(cnt);
+      })
+    });
+
+  </script>
+{% endblock %}

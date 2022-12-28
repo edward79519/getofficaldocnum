@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from simple_history.models import HistoricalRecords
 
 # Create your models here.
+# 更改內建使用者(User Model)預設顯示方式
+User.__str__ = lambda user_instance: "{}{}".format(user_instance.last_name, user_instance.first_name)
 
 
 class Company(models.Model):
@@ -84,11 +86,12 @@ class ReceiveDoc(models.Model):
 
 
 class BaseModel(models.Model):
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='%(app_label)s_%(class)s_author')
     changed_by = models.ForeignKey('auth.User', on_delete=models.PROTECT)
     is_valid = models.BooleanField(default=True)
     add_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords()
+    history = HistoricalRecords(inherit=True)
 
     @property
     def _history_user(self):
@@ -103,7 +106,103 @@ class BaseModel(models.Model):
 
 
 class ContractCate(BaseModel):
-    sn = models.IntegerField(max_length=3, unique=True, primary_key=True)
+    sn = models.IntegerField(unique=True, primary_key=True)
     name = models.CharField(max_length=50, unique=True)
 
+    def __str__(self):
+        return "{}_{}".format(str(self.sn).zfill(2), self.name)
 
+
+class ContractStatus(models.Model):
+    order = models.IntegerField(unique=True)
+    name = models.CharField(max_length=20, unique=True)
+    is_valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order']
+
+
+class ContractTaxStatus(models.Model):
+    order = models.IntegerField(unique=True)
+    name = models.CharField(max_length=20, unique=True)
+    is_valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order']
+
+
+class Project(BaseModel):
+    order = models.IntegerField(unique=True)
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Contract(BaseModel):
+    sn = models.CharField(max_length=17, unique=True)
+    status = models.ForeignKey(
+        ContractStatus,
+        on_delete=models.PROTECT,
+        related_name='contracts',
+    )
+    comp = models.ForeignKey(
+        Company,
+        on_delete=models.PROTECT,
+        related_name='contracts',
+    )
+    category = models.ForeignKey(
+        ContractCate,
+        on_delete=models.PROTECT,
+        related_name='contracts',
+    )
+    sign_date = models.DateField(null=True, blank=True)
+    length = models.IntegerField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    counterparty = models.CharField(max_length=100)
+    counter_dept = models.CharField(max_length=50)
+    counter_contact = models.CharField(max_length=50)
+    total_price = models.DecimalField(max_digits=15, decimal_places=2)
+    tax_status = models.ForeignKey(
+        ContractTaxStatus,
+        on_delete=models.PROTECT,
+        related_name='contracts',
+    )
+    tax = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    payment = models.CharField(max_length=100, null=True, blank=True)
+    content = models.CharField(max_length=500)
+    manage_dept = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT,
+        related_name='contracts',
+        null=True,
+        blank=True,
+    )
+    manager = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='contracts',
+        null=True,
+        blank=True,
+    )
+    location = models.CharField(max_length=50, null=True, blank=True)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    remark = models.CharField(max_length=500, null=True, blank=True)
+
+    def __str__(self):
+        return "{}-{}-{}".format(self.sn, self.comp, self.category, self.counterparty)
+
+    class Meta:
+        ordering = ['-add_time']

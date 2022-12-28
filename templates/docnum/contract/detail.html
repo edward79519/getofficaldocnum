@@ -1,0 +1,208 @@
+{% extends 'frame/base.html' %}
+{% load docnum_extra %}
+
+{% block title %}合約 - {{ rcvdoc.fullsn }} - 寶晶紙本公文{% endblock %}
+{% block content %}
+  <section id="doclist" class="py-3">
+    <div class="container py-3">
+      <div class="row">
+        <div class="col-12">
+          {% if messages %}
+              {% for message in messages %}
+                <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
+                  {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                  {{ message }}
+                </div>
+              {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <h1 class="my-3">{{ contract.comp.shortname }}合約：{{ contract.sn }} - 詳細資料</h1>
+          <div class="text-right"><span class="text-muted small">新增日期: {{ contract.add_time|date:"Y-m-d H:i:s" }}, by {{ contract.created_by }}</span></div>
+          <div class="mb-3 text-right"><span class="text-muted small">最後修改: {{ contract.update_time|date:"Y-m-d H:i:s" }}, by {{ contract.changed_by }}</span></div>
+          {% if not contract.is_valid %}
+            <div class="alert alert-danger"><strong>注意：此單已作廢！</strong></div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col">
+          {% if request.user|can_confirm:contract %}
+            {% if contract.status.name == "已取號" %}
+              <a class="btn btn-success mr-3" href="{% url 'Contract_confirm' contract.id %}">確認</a>
+            {% elif contract.status.name == "已確認" %}
+              <a class="btn btn-danger mr-3" href="{% url 'Contract_confirm' contract.id %}">取消確認</a>
+            {% endif %}
+          {% endif %}
+          {% if request.user|can_update:contract %}
+            <a class="btn btn-primary" href="{% url 'Contract_update' contract.id %}">編輯</a>
+          {% endif %}
+        </div>
+        {% if request.user|can_disable:contract %}
+          <div class="col text-right">
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
+              作廢
+            </button>
+          </div>
+        {% endif %}
+      </div>
+      <div class="row mb-3">
+        <div class="col-12 col-md-3">
+          <label for="sn_id">合約編號：</label>
+          <p id="sn_id" class="h5 pl-3 font-weight-bold">
+            <span id="contrac_id">{{ contract.sn }}</span>
+            <a id="copyclip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-plus" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z"/>
+                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+              </svg>
+            </a>
+          </p>
+          <small class="d-none text-danger font-weight-bold" id="clip_rslt">已複製到剪貼簿！</small>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="comp_id">公司名稱：</label>
+          <p id="comp_id" class="h5 pl-3 font-weight-bold">{{ contract.comp }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="category_id">合約類型：</label>
+          <p id="category_id" class="h5 pl-3 font-weight-bold">{{ contract.category }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="status_id">取號狀態：</label>
+          <p id="status_id" class="h5 pl-3 font-weight-bold">{{ contract.status }}</p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12 col-md-3">
+          <label for="counterparty_id">合約對象：</label>
+          <p id="counterparty_id" class="h5 pl-3 font-weight-bold">{{ contract.counterparty }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="counter_dept_id">承辦單位：</label>
+          <p id="counter_dept_id" class="h5 pl-3 font-weight-bold">{{ contract.counter_dept }}</p>
+        </div>
+        <div class="col-12 col-md-6">
+          <label for="counter_contact">合約對象：</label>
+          <p id="counter_contact_id" class="h5 pl-3 font-weight-bold">{{ contract.counter_contact }}</p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12 col-md-3">
+          <label for="sign_date_id">訂約日期：</label>
+          <p id="sign_date_id" class="h5 pl-3 font-weight-bold">{{ contract.sign_date|date:"Y年m月d日" }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="length_id">合約年限：</label>
+          <p id="length_id" class="h5 pl-3 font-weight-bold">{{ contract.length|default_if_none:"--" }} 年</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="start_date_id">合約起日：</label>
+          <p id="start_date_id" class="h5 pl-3 font-weight-bold">{{ contract.start_date|date:"Y年m月d日" }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="start_date_id">合約迄日：</label>
+          <p id="start_date_id" class="h5 pl-3 font-weight-bold">{{ contract.start_date|date:"Y年m月d日" }}</p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12 col-md-3">
+          <label for="total_price_id">合約金額(含稅)：</label>
+          <p id="total_price_id" class="h5 pl-3 font-weight-bold">{{ contract.total_price|floatformat:"0" }} 元</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="payment_id">付款方式：</label>
+          <p id="payment_id" class="h5 pl-3 font-weight-bold">{{ contract.payment|default_if_none:"無" }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="tax_status_id">印花稅：</label>
+          <p id="tax_status_id" class="h5 pl-3 font-weight-bold">{{ contract.tax_status }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="tax_id">印花稅金額：</label>
+          <p id="tax_id" class="h5 pl-3 font-weight-bold">{{ contract.tax|floatformat:"0" }} 元</p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label for="content_id">合約主要內容：</label>
+          <p id="content_id" class="h5 pl-3 font-weight-bold">{{ contract.content }}</p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <label for="remark_id">備註：</label>
+          <p id="remark_id" class="h5 pl-3 font-weight-bold">{{ contract.remark|default_if_none:"無" }}</p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-12 col-md-3">
+          <label for="manage_dept_id">管理單位：</label>
+          <p id="manage_dept_id" class="h5 pl-3 font-weight-bold">{{ contract.manage_dept|default_if_none:"無" }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="manager_id">管理人：</label>
+          <p id="manager_id" class="h5 pl-3 font-weight-bold">{{ contract.manager|default_if_none:"無" }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="project_id">專案名稱：</label>
+          <p id="project_id" class="h5 pl-3 font-weight-bold">{{ contract.project|default_if_none:"無" }}</p>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="location_id">存放位置：</label>
+          <p id="location_id" class="h5 pl-3 font-weight-bold">{{ contract.location|default_if_none:"無" }}</p>
+        </div>
+      </div>
+      <a href="{% url 'Contract_list' %}"><div role="button" class="btn btn-danger">返合約列表</div></a>
+    </div>
+
+    {% if request.user|can_disable:contract %}
+      <!-- Disable Modal 作廢小視窗 -->
+      <div class="modal fade" id="disableModal" tabindex="-1" role="dialog" aria-labelledby="disableModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form method="POST" action="{% url 'Contract_disable' contract.id %}" class="needs-validation" onsubmit="" novalidate>
+              {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title" id="disableModalLabel">確認是否做廢 {{ contract.sn }} ？</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <label for="id_change_reason">作廢原因*：</label>
+                <input class="form-control" id="id_change_reason" name="change_reason" required>
+                <div class="invalid-feedback">
+                  請填作廢原因！
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-danger" >作廢</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+  <script type="application/javascript">
+    // 複製序號進剪貼簿
+    $('#copyclip').on('click', function (){
+      let sn = $('#contrac_id').text();
+      // 複製到剪貼簿 Clipboard API
+      navigator.clipboard.writeText(sn)
+        .then(() => {
+          console.log('內容已複製');
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+      // 顯示結果
+      $('#clip_rslt').removeClass('d-none');
+    });
+  </script>
+{% endblock %}
