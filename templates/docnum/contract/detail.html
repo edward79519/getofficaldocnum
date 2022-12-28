@@ -39,6 +39,9 @@
           {% if request.user|can_update:contract %}
             <a class="btn btn-primary" href="{% url 'Contract_update' contract.id %}">編輯</a>
           {% endif %}
+          {% if request.user|can_archive:contract %}
+            <a class="btn btn-warning" href="{% url 'Contract_archive' contract.id %}">封存</a>
+          {% endif %}
         </div>
         {% if request.user|can_disable:contract %}
           <div class="col text-right">

@@ -20,9 +20,11 @@ def can_update(user, contra):
             if user.id == contra.created_by.id:
                 return True
             return False
-        else:
+        elif contra.status.name == "已歸檔":
             if mngr_group in user.groups.all():
                 return True
+            return False
+        else:
             return False
     else:
         return False
@@ -53,4 +55,15 @@ def can_disable(user, contra):
             return False
     else:
         print('contract is not valid')
+        return False
+
+
+@register.filter(name='can_archive')
+def can_archive(user, contra):
+    if contra.status.name == "已確認":
+        if mngr_group in user.groups.all():
+            return True
+        else:
+            return False
+    else:
         return False

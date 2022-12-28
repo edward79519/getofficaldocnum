@@ -504,14 +504,18 @@ def contract_confirm(request, contra_id):
     if is_author:
         if contract.status.name == "已取號":
             contract.status = ContractStatus.objects.get(name="已確認")
+            contract.changed_by = request.user
             contract.save()
+            update_change_reason(contract, "確認表單")
             messages.add_message(request, messages.SUCCESS, "合約: {}-{}-{} 已確認。".format(
                 contract.sn, contract.comp.shortname, contract.category.name
             ))
             return redirect('Contract_detail', contra_id=contra_id)
         elif contract.status.name == "已確認":
             contract.status = ContractStatus.objects.get(name="已取號")
+            contract.changed_by = request.user
             contract.save()
+            update_change_reason(contract, "取消確認")
             messages.add_message(request, messages.WARNING, "合約: {}-{}-{} 已取消確認。".format(
                 contract.sn, contract.comp.shortname, contract.category.name
             ))
@@ -522,8 +526,31 @@ def contract_confirm(request, contra_id):
     elif is_mngr:
         if contract.status.name == "已確認":
             contract.status = ContractStatus.objects.get(name="已取號")
+            contract.changed_by = request.user
             contract.save()
+            update_change_reason(contract, "管理者取消確認")
             messages.add_message(request, messages.WARNING, "合約: {}-{}-{} 已取消確認。".format(
+                contract.sn, contract.comp.shortname, contract.category.name
+            ))
+            return redirect('Contract_detail', contra_id=contra_id)
+        else:
+            return redirect('Non_auth_error')
+    else:
+        return redirect('Non_auth_error')
+
+
+@login_required
+def contract_archive(request, contra_id):
+    contract = Contract.objects.get(id=contra_id)
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    is_mngr = mngr_group in request.user.groups.all()
+    if is_mngr:
+        if contract.status.name == "已確認":
+            contract.status = ContractStatus.objects.get(name="已歸檔")
+            contract.changed_by = request.user
+            contract.save()
+            update_change_reason(contract, "管理者歸檔")
+            messages.add_message(request, messages.SUCCESS, "合約: {}-{}-{} 已歸檔。".format(
                 contract.sn, contract.comp.shortname, contract.category.name
             ))
             return redirect('Contract_detail', contra_id=contra_id)
