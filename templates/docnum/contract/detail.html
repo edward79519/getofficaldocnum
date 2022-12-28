@@ -40,7 +40,9 @@
             <a class="btn btn-primary" href="{% url 'Contract_update' contract.id %}">編輯</a>
           {% endif %}
           {% if request.user|can_archive:contract %}
-            <a class="btn btn-warning" href="{% url 'Contract_archive' contract.id %}">封存</a>
+            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#archiveModal">
+              歸檔
+            </button>
           {% endif %}
         </div>
         {% if request.user|can_disable:contract %}
@@ -187,6 +189,37 @@
                 <button type="submit" class="btn btn-danger" >作廢</button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+    {% if request.user|can_archive:contract %}
+      <!-- Disable Modal 作廢小視窗 -->
+      <div class="modal fade" id="archiveModal" tabindex="-1" role="dialog" aria-labelledby="archiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="archiveModalLabel">確認是否歸檔 {{ contract.sn }} ？</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-4">合約編號：</div>
+                <div class="col-8 font-weight-bold">{{ contract.sn }}</div>
+                <div class="col-4">公司名稱：</div>
+                <div class="col-8 font-weight-bold">{{ contract.comp.fullname }}</div>
+                <div class="col-4">合約類別：</div>
+                <div class="col-8 font-weight-bold">{{ contract.category.name }}</div>
+                <div class="col-4">合約對象：</div>
+                <div class="col-8 font-weight-bold">{{ contract.counterparty }}</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+              <a class="btn btn-warning" href="{% url 'Contract_archive' contract.id %}">歸檔</a>
+            </div>
           </div>
         </div>
       </div>
