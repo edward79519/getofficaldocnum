@@ -6,7 +6,7 @@ from simple_history.admin import SimpleHistoryAdmin
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('id', 'fullname', 'valid')
+    list_display = ('id', 'plmsn', 'fullname', 'valid')
 
 
 class DeptAdmin(admin.ModelAdmin):

@@ -38,7 +38,6 @@ def doc_list(request):
 @login_required
 def doc_add(request):
     template = loader.get_template('docnum/officaldoc/add.html')
-    print(request.user.id, User.objects.get(id=request.user.id))
     if request.method == "POST":
         form = AddDocForm(request.POST)
         form.fields["author"].queryset = User.objects.filter(id=request.user.id)
@@ -378,15 +377,17 @@ def switch_dept(request, dept_id):
 
 
 def get_contractsn(comp_id, cate_id, date):
-    contract_count = Contract.objects.filter(
+    contract = Contract.objects.filter(
         comp_id=comp_id,
         category_id=cate_id,
         add_time__year=date.year,
         add_time__month=date.month,
-    ).count()
+    )
+    compplmsn = Company.objects.get(id=comp_id).plmsn
+    contract_count = contract.count()
 
     contract_sn = 'C{}{}{}{}{}'.format(
-        str(comp_id).zfill(2),
+        str(compplmsn).zfill(2),
         str(cate_id).zfill(2),
         str(date.year)[-2:],
         str(date.month).zfill(2),

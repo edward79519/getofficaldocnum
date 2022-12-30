@@ -14,7 +14,6 @@ def has_group(user, group_name):
 
 @register.filter(name='can_update')
 def can_update(user, contra):
-    print(user.groups.all())
     if contra.is_valid:
         if contra.status.name == "已取號":
             if user.id == contra.created_by.id:

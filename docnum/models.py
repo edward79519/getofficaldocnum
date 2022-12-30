@@ -13,9 +13,13 @@ class Company(models.Model):
     addtime = models.DateTimeField(auto_now_add=True)
     updatetime = models.DateTimeField(auto_now=True)
     valid = models.BooleanField(default=True)
+    plmsn = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.fullname
+
+    class Meta:
+        ordering = ['plmsn']
 
 
 class Department(models.Model):
