@@ -26,4 +26,5 @@ urlpatterns = [
     path('contract/<int:contra_id>/disable/', views.contract_disable, name='Contract_disable'),
     path('contract/<int:contra_id>/confirm/', views.contract_confirm, name='Contract_confirm'),
     path('contract/<int:contra_id>/archive/', views.contract_archive, name='Contract_archive'),
+    path('contract/<int:contra_id>/addextend/', views.contract_extend, name='Contract_extend'),
 ]

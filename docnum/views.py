@@ -396,6 +396,45 @@ def get_contractsn(comp_id, cate_id, date):
     return contract_sn
 
 
+def get_contractsn2(comp_id, cate_id, date):
+    contract_list = Contract.objects.filter(
+        comp_id=comp_id,
+        category_id=cate_id,
+        add_time__year=date.year,
+        add_time__month=date.month,
+    )
+    if contract_list.count() != 0:
+        latest_contract = contract_list.order_by('-sn').first()
+        new_sn = latest_contract.sn[0:9] + str(int(latest_contract.sn[9:12])+1).zfill(3)
+        return new_sn
+    else:
+        compplmsn = Company.objects.get(id=comp_id).plmsn
+        new_sn = 'C{}{}{}{}{}'.format(
+            str(compplmsn).zfill(2),
+            str(cate_id).zfill(2),
+            str(date.year)[-2:],
+            str(date.month).zfill(2),
+            "001"
+        )
+        return new_sn
+
+
+def get_extendcontract(contra_sn):
+    contra_list = Contract.objects.filter(sn__startswith=contra_sn).order_by('-add_time')
+    newest_sn = contra_list.first().sn
+    if len(newest_sn) == 12:
+        new_extend_sn = newest_sn + "-01"
+        return new_extend_sn
+    elif len(newest_sn) == 15:
+        [origin_sn, serial_sn] = newest_sn.split("-")
+        new_serial_sn = str(int(serial_sn) + 1).zfill(2)
+        if len(new_serial_sn) != 2:
+            return None
+        new_extend_sn = origin_sn + "-" + new_serial_snㄌ
+    else:
+        return None
+
+
 @login_required
 def contract_add(request):
     template = loader.get_template('docnum/contract/add.html')
@@ -409,7 +448,7 @@ def contract_add(request):
         post_copy['changed_by'] = request.user.id
         post_copy['created_by'] = request.user.id
         post_copy['status'] = 1
-        post_copy['sn'] = get_contractsn(comp_id=comp_id, cate_id=cate_id, date=today)
+        post_copy['sn'] = get_contractsn2(comp_id=comp_id, cate_id=cate_id, date=today)
         form = AddContractForm(post_copy)
         if form.is_valid():
             new_contra = form.save()
@@ -421,6 +460,44 @@ def contract_add(request):
         'form': form,
     }
     return HttpResponse(template.render(context, request))
+
+
+def contract_extend(request, contra_id):
+    template = loader.get_template('docnum/contract/extend.html')
+    old_contract = Contract.objects.get(id=contra_id)
+    if request.method == "POST":
+        post_copy = request.POST.copy()
+        today = timezone.localtime(timezone.now()).date()
+        post_copy['comp']= old_contract.comp_id
+        post_copy['category'] = old_contract.category_id
+        post_copy['changed_by'] = request.user.id
+        post_copy['created_by'] = request.user.id
+        post_copy['status'] = 1
+        post_copy['sn'] = get_extendcontract(old_contract.sn)
+        form = AddContractForm(post_copy)
+        if form.is_valid():
+            new_contra = form.save()
+            messages.add_message(request, messages.SUCCESS, "新增增補合約: {} 成功！".format(new_contra.sn))
+            return redirect('Contract_detail', contra_id=new_contra.id)
+    else:
+        form = AddContractForm(
+            initial={
+                'comp': old_contract.comp_id,
+                'category': old_contract.category_id,
+                'counterparty': old_contract.counterparty,
+                'counter_dept': old_contract.counter_dept,
+                'counter_contact': old_contract.counter_contact,
+                'manage_dept': old_contract.manage_dept,
+                'manager': old_contract.manager,
+                'location': old_contract.location,
+                'project': old_contract.project,
+            })
+    context = {
+        'old_contract_sn': old_contract.sn,
+        'form': form,
+    }
+    return HttpResponse(template.render(context, request))
+
 
 
 @login_required
