@@ -462,12 +462,12 @@ def contract_add(request):
     return HttpResponse(template.render(context, request))
 
 
+@login_required
 def contract_extend(request, contra_id):
     template = loader.get_template('docnum/contract/extend.html')
     old_contract = Contract.objects.get(id=contra_id)
     if request.method == "POST":
         post_copy = request.POST.copy()
-        today = timezone.localtime(timezone.now()).date()
         post_copy['comp']= old_contract.comp_id
         post_copy['category'] = old_contract.category_id
         post_copy['changed_by'] = request.user.id
@@ -499,7 +499,6 @@ def contract_extend(request, contra_id):
     return HttpResponse(template.render(context, request))
 
 
-
 @login_required
 def contract_list(request):
     template = loader.get_template('docnum/contract/list.html')
@@ -514,8 +513,10 @@ def contract_list(request):
 def contract_detail(request, contra_id):
     template = loader.get_template('docnum/contract/detail.html')
     contract = Contract.objects.get(id=contra_id)
+    extends = Contract.objects.filter(sn__startswith=contract.sn[:12])
     context = {
         'contract': contract,
+        'extends': extends,
     }
     return HttpResponse(template.render(context, request))
 

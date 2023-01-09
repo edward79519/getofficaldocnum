@@ -1,7 +1,7 @@
 {% extends 'frame/base.html' %}
 {% load docnum_extra %}
 
-{% block title %}合約 - {{ rcvdoc.fullsn }} - 寶晶紙本公文{% endblock %}
+{% block title %}合約 - {{ contract.sn }} 詳細資料 - 寶晶紙本公文{% endblock %}
 {% block content %}
   <section id="doclist" class="py-3">
     <div class="container py-3">
@@ -161,7 +161,58 @@
           <p id="location_id" class="h5 pl-3 font-weight-bold">{{ contract.location|default_if_none:"無" }}</p>
         </div>
       </div>
-      <a href="{% url 'Contract_list' %}"><div role="button" class="btn btn-danger">返合約列表</div></a>
+    <div class="row mb-3">
+      <div class="col-12 mb-3">
+        <a href="{% url 'Contract_extend' contract.id %}"><div role="button" class="btn btn-primary">新增增補合約</div></a>
+      </div>
+      {% if extends.count > 1 %}
+      <div class="col-12">
+        <h2>增補約列表</h2>
+      </div>
+      <div class="col-12">
+        <div class="table-responsive" id="table">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col" class="fit">合約編號</th>
+                  <th scope="col" class="text-center">立約日期</th>
+                  <th scope="col" class="text-center">合約起日</th>
+                  <th scope="col" class="text-center">合約迄日</th>
+                  <th scope="col" class="fit text-center">取號狀態</th>
+                  <th scope="col" class="text-center fit">新增人員</th>
+                  <th scope="col" class="text-center">新增日期</th>
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for extend in extends %}
+                <tr {% if extend.sn == contract.sn %}class="table-primary" {% endif %}>
+                  <td ><a href="{% url 'Contract_detail' extend.id %}">{{ extend.sn }}</a></td>
+                  <td class="text-center">{{ extend.sign_date|date:"Y-m-d" }}</td>
+                  <td class="text-center">{{ extend.start_date|date:"Y-m-d" }}</td>
+                  <td class="text-center">{{ extend.end_date|date:"Y-m-d" }}</td>
+                  <td class="text-center">{{ extend.status }}</td>
+                  <td class="text-center">{{ extend.created_by }}</td>
+                  <td class="text-center">{{ extend.add_time|date:"Y-m-d" }}</td>
+                </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="4" class="text-center"> 目前沒有公文或沒有權限觀看。 </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <nav aria-label="Page navigation">
+              <ul class="pagination"></ul>
+            </nav>
+          </div>
+      </div>
+      {% endif %}
+    </div>
+      <div class="row">
+        <div class="col-12">
+          <a href="{% url 'Contract_list' %}"><div role="button" class="btn btn-danger">返合約列表</div></a>
+        </div>
+      </div>
     </div>
 
     {% if request.user|can_disable:contract %}
