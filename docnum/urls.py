@@ -27,4 +27,8 @@ urlpatterns = [
     path('contract/<int:contra_id>/confirm/', views.contract_confirm, name='Contract_confirm'),
     path('contract/<int:contra_id>/archive/', views.contract_archive, name='Contract_archive'),
     path('contract/<int:contra_id>/addextend/', views.contract_extend, name='Contract_extend'),
+    path('contract/<int:contra_id>/loan/', views.contract_loan, name='Contract_loan'),
+    path('loan/<int:loan_id>/lentout/', views.loan_lendout, name="Loan_lend"),
+    path('loan/<int:loan_id>/backin/', views.loan_backin, name="Loan_back"),
+    path('loan/<int:loan_id>/cancel/', views.loan_cancel, name="Loan_cancel"),
 ]

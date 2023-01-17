@@ -44,6 +44,11 @@
               歸檔
             </button>
           {% endif %}
+          {% if contract.status.name == "已歸檔" %}
+          <button type="button" class="btn btn-primary ml-3" data-toggle="modal" data-target="#loanModal">
+            申請取用
+          </button>
+          {% endif %}
         </div>
         {% if request.user|can_disable:contract %}
           <div class="col text-right">
@@ -82,7 +87,7 @@
         </div>
       </div>
       <div class="row mb-3">
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-6">
           <label for="counterparty_id">合約對象：</label>
           <p id="counterparty_id" class="h5 pl-3 font-weight-bold">{{ contract.counterparty }}</p>
         </div>
@@ -90,8 +95,8 @@
           <label for="counter_dept_id">承辦單位：</label>
           <p id="counter_dept_id" class="h5 pl-3 font-weight-bold">{{ contract.counter_dept }}</p>
         </div>
-        <div class="col-12 col-md-6">
-          <label for="counter_contact">合約對象：</label>
+        <div class="col-12 col-md-3">
+          <label for="counter_contact">承辦人：</label>
           <p id="counter_contact_id" class="h5 pl-3 font-weight-bold">{{ contract.counter_contact }}</p>
         </div>
       </div>
@@ -144,14 +149,14 @@
         </div>
       </div>
       <div class="row mb-3">
-        <div class="col-12 col-md-3">
-          <label for="manage_dept_id">管理單位：</label>
-          <p id="manage_dept_id" class="h5 pl-3 font-weight-bold">{{ contract.manage_dept|default_if_none:"無" }}</p>
-        </div>
-        <div class="col-12 col-md-3">
-          <label for="manager_id">管理人：</label>
-          <p id="manager_id" class="h5 pl-3 font-weight-bold">{{ contract.manager|default_if_none:"無" }}</p>
-        </div>
+{#        <div class="col-12 col-md-3">#}
+{#          <label for="manage_dept_id">管理單位：</label>#}
+{#          <p id="manage_dept_id" class="h5 pl-3 font-weight-bold">{{ contract.manage_dept|default_if_none:"無" }}</p>#}
+{#        </div>#}
+{#        <div class="col-12 col-md-3">#}
+{#          <label for="manager_id">管理人：</label>#}
+{#          <p id="manager_id" class="h5 pl-3 font-weight-bold">{{ contract.manager|default_if_none:"無" }}</p>#}
+{#        </div>#}
         <div class="col-12 col-md-3">
           <label for="project_id">專案名稱：</label>
           <p id="project_id" class="h5 pl-3 font-weight-bold">{{ contract.project|default_if_none:"無" }}</p>
@@ -161,16 +166,16 @@
           <p id="location_id" class="h5 pl-3 font-weight-bold">{{ contract.location|default_if_none:"無" }}</p>
         </div>
       </div>
-    <div class="row mb-3">
-      <div class="col-12 mb-3">
-        <a href="{% url 'Contract_extend' contract.id %}"><div role="button" class="btn btn-primary">新增增補合約</div></a>
-      </div>
-      {% if extends.count > 1 %}
-      <div class="col-12">
-        <h2>增補約列表</h2>
-      </div>
-      <div class="col-12">
-        <div class="table-responsive" id="table">
+      <div class="row mb-3">
+        <div class="col-12 mb-3">
+          <a href="{% url 'Contract_extend' contract.id %}"><div role="button" class="btn btn-primary">新增增補合約</div></a>
+        </div>
+        {% if extends.count > 1 %}
+        <div class="col-12">
+          <h2>增補約列表</h2>
+        </div>
+        <div class="col-12">
+          <div class="table-responsive" id="table">
             <table class="table table-hover">
               <thead>
                 <tr>
@@ -204,10 +209,64 @@
             <nav aria-label="Page navigation">
               <ul class="pagination"></ul>
             </nav>
-          </div>
+            </div>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
-    </div>
+      <div class="row mb-3">
+        <div class="col-12">
+          <h2>取用紀錄</h2>
+        </div>
+        <div class="col-12">
+          <div class="table-responsive" id="table">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col" class="fit">取用單號</th>
+                  <th scope="col" class="text-center">申請人</th>
+                  <th scope="col" class="text-center">申請日期</th>
+                  <th scope="col" class="text-center">事由</th>
+                  <th scope="col" class="text-center">申請狀態</th>
+                  <th scope="col" class="text-center">借出時間</th>
+                  <th scope="col" class="text-center">歸還時間</th>
+                  <th scope="col" class="text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for loan in loans %}
+                  <tr>
+                    <td>{{ loan.sn }}</td>
+                    <td class="text-center">{{ loan.created_by }}</td>
+                    <td class="text-center">{{ loan.add_time|date:"Y-m-d" }}</td>
+                    <td>{{ loan.reason }}</td>
+                    <td class="text-center">{{ loan.status }}</td>
+                    <td class="text-center">{{ loan.out_time|date:"Y-m-d" }}</td>
+                    <td class="text-center">{{ loan.in_time|date:"Y-m-d" }}</td>
+                    <td class="text-center">
+                      {% if user|has_group:"OffDoc Manager" %}
+                        {% if loan.status == "申請中" %}
+                          <a class="btn btn-sm btn-success" href="{% url 'Loan_lend' loan.id %}">借出</a>
+                        {% elif loan.status == "借出中"%}
+                          <a class="btn btn-sm btn-warning" href="{% url 'Loan_back' loan.id %}">歸還</a>
+                        {% endif %}
+                      {% endif %}
+                      {% if request.user.id == loan.created_by.id %}
+                        {% if loan.status == "申請中" %}
+                          <a class="btn btn-sm btn-danger" href="{% url 'Loan_cancel' loan.id %}">取消申請</a>
+                        {% endif %}
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center"> 目前沒有公文或沒有權限觀看。 </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div class="row">
         <div class="col-12">
           <a href="{% url 'Contract_list' %}"><div role="button" class="btn btn-danger">返合約列表</div></a>
@@ -245,7 +304,7 @@
       </div>
     {% endif %}
     {% if request.user|can_archive:contract %}
-      <!-- Disable Modal 作廢小視窗 -->
+      <!-- archive Modal 歸檔小視窗 -->
       <div class="modal fade" id="archiveModal" tabindex="-1" role="dialog" aria-labelledby="archiveModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -275,6 +334,46 @@
         </div>
       </div>
     {% endif %}
+    {% if contract.status.name == "已歸檔" %}
+      <!-- loan Modal 取用小視窗 -->
+      <div class="modal fade" id="loanModal" tabindex="-1" role="dialog" aria-labelledby="loanModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form method="POST" action="{% url 'Contract_loan' contract.id %}" class="needs-validation" onsubmit="" novalidate>
+            {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title" id="loanModalLabel">申請取用 {{ contract.sn }} ？</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+                  <div class="col-4">合約編號：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.sn }}</div>
+                  <div class="col-4">公司名稱：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.comp.fullname }}</div>
+                  <div class="col-4">合約類別：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.category.name }}</div>
+                  <div class="col-4">合約對象：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.counterparty }}</div>
+                </div>
+                <label for="id_bor_reason">取用原因*：</label>
+                <input class="form-control" id="id_bor_reason" name="bor_reason" required>
+                <div class="invalid-feedback">
+                  請填取用原因！
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary">申請取用</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
   </section>
   <script type="application/javascript">
     // 複製序號進剪貼簿

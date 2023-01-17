@@ -142,18 +142,18 @@
               </div>
             </div>
             <div class="form-row">
-              <div class="col-12 col-md-3">
-                <div class="form-group">
-                  {{ form.manage_dept.errors }}
-                  {{ form.manage_dept.label_tag }} {{ form.manage_dept }}
-                </div>
-              </div>
-              <div class="col-12 col-md-3">
-                <div class="form-group">
-                  {{ form.manager.errors }}
-                  {{ form.manager.label_tag }} {{ form.manager }}
-                </div>
-              </div>
+{#              <div class="col-12 col-md-3">#}
+{#                <div class="form-group">#}
+{#                  {{ form.manage_dept.errors }}#}
+{#                  {{ form.manage_dept.label_tag }} {{ form.manage_dept }}#}
+{#                </div>#}
+{#              </div>#}
+{#              <div class="col-12 col-md-3">#}
+{#                <div class="form-group">#}
+{#                  {{ form.manager.errors }}#}
+{#                  {{ form.manager.label_tag }} {{ form.manager }}#}
+{#                </div>#}
+{#              </div>#}
               <div class="col-12 col-md-3">
                 <div class="form-group">
                   {{ form.location.errors }}
@@ -239,6 +239,7 @@
 
         let start_date = new Date(start_date_str);
         start_date.setFullYear(start_date.getFullYear() + years);
+        start_date.setDate(start_date.getDate() - 1);
         let end_date_str = start_date.toISOString().substring(0, 10);
         $('#id_end_date').val(end_date_str).attr("min", start_date_str);
       });

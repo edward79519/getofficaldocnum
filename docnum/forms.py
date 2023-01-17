@@ -94,8 +94,8 @@ class AddContractForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'counterparty': forms.TextInput(attrs={'class': 'form-control'}),
-            'counter_dept': forms.TextInput(attrs={'class': 'form-control'}),
-            'counter_contact': forms.TextInput(attrs={'class': 'form-control'}),
+            'counter_dept': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
+            'counter_contact': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
             'total_price': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': 0,
@@ -147,8 +147,8 @@ class UpdateContractForm(forms.ModelForm):
             }),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'counterparty': forms.TextInput(attrs={'class': 'form-control'}),
-            'counter_dept': forms.TextInput(attrs={'class': 'form-control'}),
+            'counterparty': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
+            'counter_dept': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
             'counter_contact': forms.TextInput(attrs={'class': 'form-control'}),
             'total_price': forms.NumberInput(attrs={
                 'class': 'form-control',

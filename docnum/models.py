@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from simple_history.models import HistoricalRecords
 
 # Create your models here.
@@ -160,11 +160,13 @@ class Contract(BaseModel):
         Company,
         on_delete=models.PROTECT,
         related_name='contracts',
+        limit_choices_to={'valid': True},
     )
     category = models.ForeignKey(
         ContractCate,
         on_delete=models.PROTECT,
         related_name='contracts',
+        limit_choices_to={'is_valid': True},
     )
     sign_date = models.DateField(null=True, blank=True)
     length = models.IntegerField(null=True, blank=True)
@@ -210,3 +212,52 @@ class Contract(BaseModel):
 
     class Meta:
         ordering = ['-add_time']
+
+
+class ContactLoan(BaseModel):
+
+    class Status(models.TextChoices):
+        ONGOING = '申請中', '申請中'
+        LENTOUT = '借出中', '借出中'
+        BACKIN = '已歸還', '已歸還'
+        CANCEL = '已取消', '已取消'
+
+    sn = models.CharField(max_length=12)
+    contra = models.ForeignKey(
+        Contract,
+        on_delete=models.PROTECT,
+        related_name='loans',
+    )
+    status = models.CharField(
+        max_length=8,
+        choices=Status.choices,
+        default=Status.ONGOING,
+    )
+    reason = models.CharField(max_length=100)
+    out_time = models.DateTimeField(blank=True, null=True)
+    in_time = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-add_time']
+
+    def __str__(self):
+        return "{}-{}-{}".format(self.sn, self.contra.sn, self.created_by)
+
+
+class GroupDeptRelation(models.Model):
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.PROTECT,
+        related_name="gpdptrlt",
+    )
+    dept = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT,
+        related_name="gpdptrlt",
+    )
+
+    class Meta:
+        unique_together = ['group', 'dept']
+
+    def __str__(self):
+        return self.group.name + self.dept.fullname

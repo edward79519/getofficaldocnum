@@ -5,13 +5,14 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
-from .models import OfficalDoc, Company, Department, ReceiveDoc, Contract, ContractStatus
+from .models import OfficalDoc, Company, Department, ReceiveDoc, Contract, ContractStatus, ContactLoan
 from .forms import AddDocForm, AddReceiveDocForm, AddCompanyForm, AddDepartmentForm, AddContractForm, UpdateContractForm
 from django.db import transaction, DatabaseError
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils import timezone
 from simple_history.utils import update_change_reason
+from django.db.models import Q
 
 # Global Variable
 MNGR_GROUP = "OffDoc Manager"  # 管理單位名稱
@@ -430,7 +431,7 @@ def get_extendcontract(contra_sn):
         new_serial_sn = str(int(serial_sn) + 1).zfill(2)
         if len(new_serial_sn) != 2:
             return None
-        new_extend_sn = origin_sn + "-" + new_serial_snㄌ
+        new_extend_sn = origin_sn + "-" + new_serial_sn
     else:
         return None
 
@@ -455,7 +456,9 @@ def contract_add(request):
             messages.add_message(request, messages.SUCCESS, "新增合約: {} 成功！".format(new_contra.sn))
             return redirect('Contract_detail', contra_id=new_contra.id)
     else:
-        form = AddContractForm()
+        user_group = request.user.groups.first()
+        user_dept_name = user_group.gpdptrlt.first().dept.fullname
+        form = AddContractForm(initial={'counter_contact': request.user, 'counter_dept': user_dept_name})
     context = {
         'form': form,
     }
@@ -514,9 +517,11 @@ def contract_detail(request, contra_id):
     template = loader.get_template('docnum/contract/detail.html')
     contract = Contract.objects.get(id=contra_id)
     extends = Contract.objects.filter(sn__startswith=contract.sn[:12])
+    loans = contract.loans.exclude(status=ContactLoan.Status.CANCEL)
     context = {
         'contract': contract,
         'extends': extends,
+        'loans': loans,
     }
     return HttpResponse(template.render(context, request))
 
@@ -637,3 +642,73 @@ def contract_archive(request, contra_id):
             return redirect('Non_auth_error')
     else:
         return redirect('Non_auth_error')
+
+
+@login_required
+def contract_loan(request, contra_id):
+    today = timezone.localtime(timezone.now()).date()
+    borrow_reason = request.POST['bor_reason']
+    loan_count = ContactLoan.objects.filter(
+        add_time__year=today.year,
+        add_time__month=today.month,
+        add_time__day=today.day).count()
+    sn = "BC{}{}".format(today.strftime("%Y%m%d"), str(loan_count).zfill(2))
+    loan_by_self = ContactLoan.objects.filter(contra_id=contra_id, created_by=request.user)\
+        .filter(Q(status=ContactLoan.Status.ONGOING) | Q(status=ContactLoan.Status.LENTOUT)).count()
+    if loan_by_self == 0:
+        loan = ContactLoan(
+            sn=sn,
+            contra_id=contra_id,
+            reason=borrow_reason,
+            created_by=request.user,
+            changed_by=request.user,
+        )
+        loan.save()
+        messages.add_message(request, messages.SUCCESS, "已申請借用: {}。".format(
+            loan.contra,
+        ))
+    else:
+        messages.add_message(request, messages.WARNING, "已申請或借用 {} 中，請勿重複申請。".format(
+            Contract.objects.get(id=contra_id).sn,
+        ))
+    return redirect("Contract_detail", contra_id)
+
+
+@login_required
+def loan_lendout(request, loan_id):
+    now = timezone.localtime(timezone.now())
+    loan = ContactLoan.objects.get(id=loan_id)
+    loan.status = loan.Status.LENTOUT
+    loan.out_time = now
+    loan.save()
+    update_change_reason(loan, "使用者借出")
+    messages.add_message(request, messages.SUCCESS, "使用者已借出:{}".format(
+        loan.contra.sn
+    ))
+    return redirect("Contract_detail", contra_id=loan.contra.id)
+
+
+@login_required
+def loan_backin(request, loan_id):
+    now = timezone.localtime(timezone.now())
+    loan = ContactLoan.objects.get(id=loan_id)
+    loan.status = loan.Status.BACKIN
+    loan.in_time = now
+    loan.save()
+    update_change_reason(loan, "使用者已歸還")
+    messages.add_message(request, messages.SUCCESS, "使用者已歸還:{}".format(
+        loan.contra.sn
+    ))
+    return redirect("Contract_detail", contra_id=loan.contra.id)
+
+
+@login_required
+def loan_cancel(request, loan_id):
+    loan = ContactLoan.objects.get(id=loan_id)
+    loan.status = loan.Status.CANCEL
+    loan.save()
+    update_change_reason(loan, "使用者取消申請")
+    messages.add_message(request, messages.SUCCESS, "您已取消申請:{}".format(
+        loan.contra.sn
+    ))
+    return redirect("Contract_detail", contra_id=loan.contra.id)

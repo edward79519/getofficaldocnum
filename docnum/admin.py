@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Company, Department, OfficalDoc, ReceiveDoc, ContractCate, ContractStatus, ContractTaxStatus, Project, Contract
+from .models import Company, Department, OfficalDoc, ReceiveDoc, ContractCate, ContractStatus, ContractTaxStatus\
+    , Project, Contract, ContactLoan, GroupDeptRelation
 from simple_history.admin import SimpleHistoryAdmin
 
 # Register your models here.
@@ -41,6 +42,14 @@ class ContractAdmin(SimpleHistoryAdmin):
     list_display = ('sn', 'status', 'comp', 'category', 'counterparty', 'changed_by', 'update_time', 'add_time')
 
 
+class ContractLoanAdmin(SimpleHistoryAdmin):
+    list_display = ('id', 'sn', 'contra', 'created_by', 'out_time', 'in_time', 'add_time')
+
+
+class GroupDeptRelationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'group', 'dept')
+
+
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Department, DeptAdmin)
 admin.site.register(OfficalDoc, OffDocAdmin)
@@ -50,4 +59,5 @@ admin.site.register(ContractStatus, ContractStatusAdmin)
 admin.site.register(ContractTaxStatus, ContractTaxStatusAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Contract, ContractAdmin)
-
+admin.site.register(ContactLoan, ContractLoanAdmin)
+admin.site.register(GroupDeptRelation, GroupDeptRelationAdmin)
