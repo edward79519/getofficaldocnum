@@ -712,3 +712,71 @@ def loan_cancel(request, loan_id):
         loan.contra.sn
     ))
     return redirect("Contract_detail", contra_id=loan.contra.id)
+
+
+@login_required
+def contracts_export(request):
+    contracts = Contract.objects.all().values_list('sn', 'comp__fullname', 'category__name', 'counterparty',
+                                                   'sign_date', 'length', 'start_date', 'end_date', 'total_price',
+                                                   'tax_status__name', 'tax', 'status__name', 'is_valid',
+                                                   'manage_dept__fullname', 'manager__last_name', 'manager__first_name',
+                                                   'created_by__last_name', 'created_by__first_name', 'add_time')
+    contracts_table = []
+    for contract in contracts:
+        contracts_row = []
+        for field in contract:
+            if type(field).__name__ in ["datetime", "date"]:
+                contracts_row.append(field.strftime('%Y-%m-%d'))
+            elif type(field).__name__ == 'bool':
+                if field:
+                    contracts_row.append('')
+                else:
+                    contracts_row.append('作廢')
+            else:
+                contracts_row.append(field)
+        contracts_table.append(contracts_row)
+
+    column_name = ['合約編號', '公司名稱', '合約類型', '合約對象', '訂約日期', '合約年限', '合約起日', '合約迄日', '合約金額(含稅)',
+                   '印花稅', '印花稅金額', '取號狀態', '是否作廢', '承辦單位', '承辦人_姓', '承辦人_名', '建立人_姓', '建立人_名',
+                   '新增日期']
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="ContractsList_{}.csv"'.format(
+        datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))
+
+    writer = csv.writer(response)
+    writer.writerow(column_name)
+    writer.writerows(contracts_table)
+
+    return response
+
+
+@login_required
+def loans_export(request):
+    loans = ContactLoan.objects.all().values_list('sn', 'contra__sn', 'created_by__last_name', 'created_by__first_name',
+                                                  'status', 'reason', 'add_time', 'out_time', 'in_time')
+    loans_table = []
+    for loan in loans:
+        loans_row = []
+        for field in loan:
+            if type(field).__name__ in ["datetime", "date"]:
+                loans_row.append(field.strftime('%Y-%m-%d'))
+            elif type(field).__name__ == 'bool':
+                if field:
+                    loans_row.append('')
+                else:
+                    loans_row.append('取消申請')
+            else:
+                loans_row.append(field)
+        loans_table.append(loans_row)
+
+    column_name = ['取用單號', '合約編號', '申請人_姓', '申請人_名', '申請狀態', '申請原因', '申請日期', '借出日期', '歸還日期']
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="LoansList_{}.csv"'.format(
+        datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))
+
+    writer = csv.writer(response)
+    writer.writerow(column_name)
+    writer.writerows(loans_table)
+
+    return response

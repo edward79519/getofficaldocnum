@@ -44,7 +44,8 @@
         </div>
         <div class="col-6 my-3 text-right">
           {% if user|has_group:"OffDoc Manager" %}
-{#            <a role="button" class="btn btn-secondary" href="">匯出合約總表</a>#}
+            <a role="button" class="btn btn-secondary" href="{% url 'Contract_Export' %}">匯出合約總表</a>
+            <a role="button" class="btn btn-secondary" href="{% url 'Loan_export' %}">匯出合約取用總表</a>
           {% endif %}
         </div>
         <div class="col-12">
