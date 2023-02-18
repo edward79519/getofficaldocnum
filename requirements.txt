@@ -8,3 +8,4 @@ pyodbc==4.0.32
 pytz==2021.1
 sqlparse==0.4.2
 django-simple-history==3.0.0
+openpyxl==3.1.0

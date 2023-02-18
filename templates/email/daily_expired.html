@@ -1,0 +1,10 @@
+<h2>{{ user }} 您有合約即將到期：</h2>
+
+<ul>
+  {% if expired != 0 %}<li>{{ expired }} 件合約已到期。</li>{% endif %}
+  {% if in_month != 0 %}<li>{{ in_month }} 件合約一個月內即將到期。</li>{% endif %}
+  {% if three_month != 0 %}<li>{{ three_month }} 件合約離到期日還有三個月。</li>{% endif %}
+  {% if year != 0 %}<li>{{ year }} 件合約離到期日還有一年。</li>{% endif %}
+</ul>
+
+<p>詳情請參考附件，或至合約取號系統查詢。</p>
