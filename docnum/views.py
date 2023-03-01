@@ -13,6 +13,10 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from simple_history.utils import update_change_reason
 from django.db.models import Q
+from django.db.models.functions import Concat
+from openpyxl import Workbook
+from django.core.files.temp import NamedTemporaryFile
+
 
 # Global Variable
 MNGR_GROUP = "OffDoc Manager"  # 管理單位名稱
@@ -716,11 +720,13 @@ def loan_cancel(request, loan_id):
 
 @login_required
 def contracts_export(request):
-    contracts = Contract.objects.all().values_list('sn', 'comp__fullname', 'category__name', 'counterparty',
-                                                   'sign_date', 'length', 'start_date', 'end_date', 'total_price',
-                                                   'tax_status__name', 'tax', 'status__name', 'is_valid',
-                                                   'manage_dept__fullname', 'manager__last_name', 'manager__first_name',
-                                                   'created_by__last_name', 'created_by__first_name', 'add_time')
+    fullname = Concat('created_by__last_name', 'created_by__first_name')
+    manager_name = Concat('manager__last_name', 'manager__first_name')
+    contracts = Contract.objects.all().annotate(
+        fullname=fullname, manager_name=manager_name).values_list(
+            'sn', 'comp__fullname', 'category__name', 'counterparty', 'content', 'sign_date', 'length', 'start_date', 'end_date',
+            'total_price', 'tax_status__name', 'tax', 'status__name', 'is_valid', 'manage_dept__fullname', 'manager_name',
+           'fullname', 'add_time')
     contracts_table = []
     for contract in contracts:
         contracts_row = []
@@ -736,8 +742,8 @@ def contracts_export(request):
                 contracts_row.append(field)
         contracts_table.append(contracts_row)
 
-    column_name = ['合約編號', '公司名稱', '合約類型', '合約對象', '訂約日期', '合約年限', '合約起日', '合約迄日', '合約金額(含稅)',
-                   '印花稅', '印花稅金額', '取號狀態', '是否作廢', '承辦單位', '承辦人_姓', '承辦人_名', '建立人_姓', '建立人_名',
+    column_name = ['合約編號', '公司名稱', '合約類型', '合約對象', '合約主要內容', '訂約日期', '合約年限', '合約起日', '合約迄日', '合約金額(含稅)',
+                   '印花稅', '印花稅金額', '取號狀態', '是否作廢', '承辦單位', '承辦人', '建立人',
                    '新增日期']
 
     response = HttpResponse(content_type='text/csv')
