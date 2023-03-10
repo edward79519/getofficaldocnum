@@ -43,18 +43,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div class="form-row">
-              <div class="col-12 col-md-3">
-                <div class="form-group">
-                  {{ form.counterparty.errors }}
-                  {{ form.counterparty.label_tag }} {{ form.counterparty }}
-                  <div class="invalid-feedback">
-                    請填寫合約對象
-                  </div>
-                </div>
-              </div>
               <div class="col-12 col-md-3">
                 <div class="form-group">
                   {{ form.counter_dept.errors }}
@@ -70,6 +58,17 @@
                   {{ form.counter_contact.label_tag }} {{ form.counter_contact }}
                   <div class="invalid-feedback">
                     請填承辦人
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-12 col-md-12">
+                <div class="form-group">
+                  {{ form.counterparty.errors }}
+                  {{ form.counterparty.label_tag }} {{ form.counterparty }}
+                  <div class="invalid-feedback">
+                    請填寫合約對象
                   </div>
                 </div>
               </div>
@@ -244,7 +243,7 @@
         $('#id_end_date').val(end_date_str).attr("min", start_date_str);
       });
 
-      $('#id_comp, #id_category, #id_tax_status, #id_manage_dept, #id_manager, #id_project').select2({
+      $('#id_comp, #id_category, #id_tax_status, #id_manage_dept, #id_manager, #id_project, #id_counter_contact, #id_counter_dept').select2({
           theme: 'bootstrap4',
       });
 

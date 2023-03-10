@@ -460,9 +460,10 @@ def contract_add(request):
             messages.add_message(request, messages.SUCCESS, "新增合約: {} 成功！".format(new_contra.sn))
             return redirect('Contract_detail', contra_id=new_contra.id)
     else:
-        user_group = request.user.groups.first()
+        user_group = request.user.groups.exclude(name='Taipei').first()
         user_dept_name = user_group.gpdptrlt.first().dept.fullname
-        form = AddContractForm(initial={'counter_contact': request.user, 'counter_dept': user_dept_name})
+        user_fullname = request.user.last_name+request.user.first_name
+        form = AddContractForm(initial={'counter_contact': user_fullname, 'counter_dept': user_dept_name})
     context = {
         'form': form,
     }
@@ -758,6 +759,45 @@ def contracts_export(request):
 
 
 @login_required
+def contracts_export2(request):
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="ContractsList_{}.xlsx"'.format(
+        datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))
+
+    fullname = Concat('created_by__last_name', 'created_by__first_name')
+    manager_name = Concat('manager__last_name', 'manager__first_name')
+    contracts = Contract.objects.all().annotate(
+        fullname=fullname, manager_name=manager_name).values_list(
+            'sn', 'comp__fullname', 'category__name', 'counterparty', 'content', 'sign_date', 'length', 'start_date', 'end_date',
+            'total_price', 'tax_status__name', 'tax', 'status__name', 'is_valid', 'manage_dept__fullname', 'manager_name',
+           'fullname', 'add_time')
+    wb = Workbook()
+    wb.active.title = "合約清單"
+
+    column_name = ['合約編號', '公司名稱', '合約類型', '合約對象', '合約主要內容', '訂約日期', '合約年限', '合約起日',
+                   '合約迄日', '合約金額(含稅)',
+                   '印花稅', '印花稅金額', '取號狀態', '是否作廢', '承辦單位', '承辦人', '建立人',
+                   '新增日期']
+    wb.active.append(column_name)
+    for contract in contracts:
+        contracts_row = []
+        for field in contract:
+            if type(field).__name__ in ["datetime", "date"]:
+                contracts_row.append(field.strftime('%Y-%m-%d'))
+            elif type(field).__name__ == 'bool':
+                if field:
+                    contracts_row.append('')
+                else:
+                    contracts_row.append('作廢')
+            else:
+                contracts_row.append(field)
+        wb.active.append(contracts_row)
+
+    wb.save(response)
+    return response
+
+
+@login_required
 def loans_export(request):
     loans = ContactLoan.objects.all().values_list('sn', 'contra__sn', 'created_by__last_name', 'created_by__first_name',
                                                   'status', 'reason', 'add_time', 'out_time', 'in_time')
@@ -785,4 +825,42 @@ def loans_export(request):
     writer.writerow(column_name)
     writer.writerows(loans_table)
 
+    return response
+
+
+@login_required
+def loans_export2(request):
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="LoansList_{}.xlsx"'.format(
+        datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))
+
+    fullname = Concat('created_by__last_name', 'created_by__first_name')
+    loans = ContactLoan.objects.all().annotate(fullname=fullname).values_list(
+        'sn', 'contra__sn', 'fullname', 'status', 'reason',
+        'add_time', 'out_time', 'in_time')
+
+    loan_wb = Workbook()
+    loan_wb.active.title = "合約領用清單"
+
+    column_name = ['取用單號', '合約編號', '申請人', '申請狀態', '申請原因', '申請日期', '借出日期',
+                   '歸還日期']
+    loan_wb.active.append(column_name)
+
+
+    for loan in loans:
+        loans_row = []
+        for field in loan:
+            if type(field).__name__ in ["datetime", "date"]:
+                loans_row.append(field.strftime('%Y-%m-%d'))
+            elif type(field).__name__ == 'bool':
+                if field:
+                    loans_row.append('')
+                else:
+                    loans_row.append('取消申請')
+            else:
+                loans_row.append(field)
+        loan_wb.active.append(loans_row)
+
+    loan_wb.save(response)
     return response

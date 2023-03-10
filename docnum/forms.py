@@ -1,5 +1,16 @@
 from django import forms
+from django.contrib.auth.models import User
 from .models import OfficalDoc, ReceiveDoc, Company, Department, Contract
+
+User.__str__ = lambda user_instance: "{}{}".format(user_instance.last_name, user_instance.first_name)
+
+USER_CHOICE = ()
+for ltnm, fstnm in User.objects.all().values_list('last_name', 'first_name'):
+    USER_CHOICE += ((ltnm + fstnm, ltnm + fstnm),)
+
+DEPT_CHOICES = ()
+for fullname in Department.objects.filter(valid=True):
+    DEPT_CHOICES += ((fullname, fullname),)
 
 
 class AddDocForm(forms.ModelForm):
@@ -59,6 +70,9 @@ class AddDepartmentForm(forms.ModelForm):
 
 class AddContractForm(forms.ModelForm):
 
+    counter_dept = forms.ChoiceField(label="承辦單位*", widget=forms.Select(attrs={'class': 'custom-select'}), choices=DEPT_CHOICES)
+    counter_contact = forms.ChoiceField(label="承辦人*", widget=forms.Select(attrs={'class': 'custom-select'}), choices=USER_CHOICE)
+
     class Meta:
         model = Contract
         exclude = ['add_time', 'update_time', 'is_valid']
@@ -94,8 +108,8 @@ class AddContractForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'counterparty': forms.TextInput(attrs={'class': 'form-control'}),
-            'counter_dept': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
-            'counter_contact': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
+            'counter_dept': forms.TextInput(attrs={'class': 'form-control'}),
+            'counter_contact': forms.Select(attrs={'class': 'custom-select'}),
             'total_price': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': 0,
@@ -106,16 +120,28 @@ class AddContractForm(forms.ModelForm):
                 'min': 0,
             }),
             'payment': forms.TextInput(attrs={'class': 'form-control'}),
-            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': '(請簡短描述合約主旨，例:承租枋寮鄉內寮村段631地號。)',
+            }),
             'manage_dept': forms.Select(attrs={'class': 'custom-select'}),
             'manager': forms.Select(attrs={'class': 'custom-select'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'project': forms.Select(attrs={'class': 'custom-select'}),
-            'remark': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'remark': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': '(補充記載其他事項，例:作為太陽光電案場通行、埋設管線與物料暫置之用。)',
+            }),
         }
 
 
 class UpdateContractForm(forms.ModelForm):
+
+    counter_dept = forms.ChoiceField(label="承辦單位*", widget=forms.Select(attrs={'class': 'custom-select'}), choices=DEPT_CHOICES)
+    counter_contact = forms.ChoiceField(label="承辦人*", widget=forms.Select(attrs={'class': 'custom-select'}), choices=USER_CHOICE)
+
 
     class Meta:
         model = Contract
@@ -147,8 +173,8 @@ class UpdateContractForm(forms.ModelForm):
             }),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'counterparty': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
-            'counter_dept': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
+            'counterparty': forms.TextInput(attrs={'class': 'form-control'}),
+            'counter_dept': forms.TextInput(attrs={'class': 'form-control'}),
             'counter_contact': forms.TextInput(attrs={'class': 'form-control'}),
             'total_price': forms.NumberInput(attrs={
                 'class': 'form-control',
