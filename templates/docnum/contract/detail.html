@@ -48,6 +48,21 @@
           <button type="button" class="btn btn-primary ml-3" data-toggle="modal" data-target="#loanModal">
             申請取用
           </button>
+            {% if contract.end_date|ifexpired and contract.created_by == request.user %}
+              {% if contract.expiration == "未處理" %}
+                <button type="button" class="btn btn-danger ml-3" data-toggle="modal" data-target="#expireModal">
+                  合約已到期：{{ contract.expiration }}
+                </button>
+              {% elif contract.expiration == "已終止" %}
+                <button type="button" class="btn btn-secondary ml-3">
+                  合約已到期：{{ contract.expiration }}
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-warning ml-3" data-toggle="modal" data-target="#expireModal">
+                  合約已到期：{{ contract.expiration }}
+                </button>
+              {% endif %}
+            {% endif %}
           {% endif %}
         </div>
         {% if request.user|can_disable:contract %}
@@ -374,6 +389,57 @@
       </div>
     {% endif %}
 
+    <!--過期處理-->
+    {% if contract.end_date|ifexpired and contract.created_by == request.user %}
+      <!-- loan Modal 取用小視窗 -->
+      <div class="modal fade" id="expireModal" tabindex="-1" role="dialog" aria-labelledby="expireModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form method="POST" action="{% url 'ContractEXP_switch' contract.id %}" class="needs-validation" onsubmit="" novalidate>
+            {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title" id="expireModalLabel">合約 {{ contract.sn }} 已到期</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+                  <div class="col-4">合約編號：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.sn }}</div>
+                  <div class="col-4">公司名稱：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.comp.fullname }}</div>
+                  <div class="col-4">合約類別：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.category.name }}</div>
+                  <div class="col-4">合約對象：</div>
+                  <div class="col-8 font-weight-bold">{{ contract.counterparty }}</div>
+                </div>
+                <div class="mt-2">
+                  <label for="id_expr_status">合約到期狀態變更*：</label>
+                  <select class="custom-select" id="id_expr_status" name="expr_status" required>
+                    <option value="未處理">未處理</option>
+                    <option value="待續約">待續約</option>
+                    <option value="待轉約">待轉約</option>
+                    <option value="待增補約">待增補約</option>
+                    <option value="其他">其他</option>
+                    <option value="已終止">已終止</option>
+                  </select>
+                  <label for="id_reason">處理方式*：</label>
+                  <input class="form-control" id="id_reason" name="reason" required>
+                  <div class="invalid-feedback">
+                    請填處理方式！
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary">送出</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
   </section>
   <script type="application/javascript">
     // 複製序號進剪貼簿

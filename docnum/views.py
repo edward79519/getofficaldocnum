@@ -864,3 +864,19 @@ def loans_export2(request):
 
     loan_wb.save(response)
     return response
+
+
+@login_required
+def contract_expired_switch(request, contra_id):
+    contract = Contract.objects.get(id=contra_id)
+    if request.method == "POST":
+        status = request.POST['expr_status']
+        reason = request.POST['reason']
+        if status in Contract.ExpiredStatus.values:
+            print("YA", status, reason)
+            contract.expiration = status
+            contract.save()
+            update_change_reason(contract, reason)
+            return HttpResponseRedirect('./')
+    else:
+        return redirect('Non_auth_error')

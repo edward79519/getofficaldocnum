@@ -160,14 +160,15 @@ def user_expired_contra_check():
     users = User.objects.filter(is_active=True)
     fullname = Concat('created_by__last_name', 'created_by__first_name')
     for user in users:
-        contracts = user.docnum_contract_author.filter(is_valid=True).annotate(fullname=fullname).values_list(
+        contracts = user.docnum_contract_author.filter(is_valid=True).exclude(expiration='已終止').annotate(fullname=fullname).values_list(
             'sn', 'comp__fullname', 'category__name', 'status__name', 'counterparty', 'sign_date', 'length', 'start_date',
-            'end_date', 'fullname', 'add_time__date')
+            'end_date', 'expiration','fullname', 'add_time__date')
         expireds = contracts.filter(end_date__lt=today)
         year_expired = contracts.filter(end_date=today.replace(year=today.year+1))
         three_mon_expired = contracts.filter(end_date=today + datetime.timedelta(days=90))
-        in_mon_expired = contracts.filter(end_date__lte=today + datetime.timedelta(days=30))
-
+        in_mon_expired = contracts.filter(end_date__range=(today, today + datetime.timedelta(days=30)))
+        expired_column_name = ['合約編號', '公司名稱', '合約類型', '取號狀態', '合約對象', '簽約日期', '合約年限', '合約起日',
+                       '合約訖日','合約到期狀態', '建立人', '建立日期']
         contract_dict = {
             '已過期': expireds,
             '一個月內': in_mon_expired,
@@ -183,12 +184,12 @@ def user_expired_contra_check():
 
         for period in contract_dict:
             print(user.username, period, contract_dict[period].count())
+            print(contract_dict[period])
 
             if contract_dict[period].count() != 0:
-                wb[period].append(column_name)
+                wb[period].append(expired_column_name)
                 for row in contract_dict[period]:
                     wb[period].append(row)
-
             else:
                 del wb[period]
         # only email when they have expired/almost expired contacts

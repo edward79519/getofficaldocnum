@@ -150,6 +150,16 @@ class Project(BaseModel):
 
 
 class Contract(BaseModel):
+
+    class ExpiredStatus(models.TextChoices):
+        ONGOING = '未處理', '未處理'
+        EXTEND = '待續約', '待續約'
+        CHANGE = '待轉約', '待轉約'
+        ADDON = '待增補約', '待增補約'
+        OTHER = '其他', '其他'
+        TERMNT = '已終止', '已終止'
+
+
     sn = models.CharField(max_length=17, unique=True)
     status = models.ForeignKey(
         ContractStatus,
@@ -206,6 +216,11 @@ class Contract(BaseModel):
         blank=True,
     )
     remark = models.CharField(max_length=500, null=True, blank=True)
+    expiration = models.CharField(
+        max_length=10,
+        choices=ExpiredStatus.choices,
+        default=ExpiredStatus.ONGOING
+    )
 
     def __str__(self):
         return "{}-{}-{}".format(self.sn, self.comp, self.category, self.counterparty)

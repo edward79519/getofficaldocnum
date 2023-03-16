@@ -75,7 +75,7 @@ class AddContractForm(forms.ModelForm):
 
     class Meta:
         model = Contract
-        exclude = ['add_time', 'update_time', 'is_valid']
+        exclude = ['add_time', 'update_time', 'is_valid', 'expiration']
         labels = {
             'comp': '公司名稱*',
             'category': '合約類型*',
@@ -145,7 +145,7 @@ class UpdateContractForm(forms.ModelForm):
 
     class Meta:
         model = Contract
-        exclude = ['sn', 'comp', 'category', 'add_time', 'update_time', 'is_valid', 'status', 'created_by']
+        exclude = ['sn', 'comp', 'category', 'add_time', 'update_time', 'is_valid', 'status', 'created_by', 'expiration']
         labels = {
             'sign_date': '訂約日期',
             'length': '合約年限',

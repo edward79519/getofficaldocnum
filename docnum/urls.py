@@ -29,6 +29,7 @@ urlpatterns = [
     path('contract/<int:contra_id>/archive/', views.contract_archive, name='Contract_archive'),
     path('contract/<int:contra_id>/addextend/', views.contract_extend, name='Contract_extend'),
     path('contract/<int:contra_id>/loan/', views.contract_loan, name='Contract_loan'),
+    path('contract/<int:contra_id>/expswitch', views.contract_expired_switch, name='ContractEXP_switch'),
     path('loan/export/', views.loans_export2, name='Loan_export'),
     path('loan/<int:loan_id>/lentout/', views.loan_lendout, name="Loan_lend"),
     path('loan/<int:loan_id>/backin/', views.loan_backin, name="Loan_back"),

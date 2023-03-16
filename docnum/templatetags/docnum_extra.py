@@ -1,7 +1,7 @@
 from django import template
 from django.contrib.auth.models import Group
-from docnum.models import Contract
 from docnum.views import MNGR_GROUP
+from django.utils import timezone
 
 register = template.Library()
 mngr_group = Group.objects.get(name=MNGR_GROUP)
@@ -66,3 +66,8 @@ def can_archive(user, contra):
             return False
     else:
         return False
+
+
+@register.filter(name='ifexpired')
+def ifexpired(end_date):
+    return end_date < timezone.localtime().date()
