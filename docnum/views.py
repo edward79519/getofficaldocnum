@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils import timezone
 from simple_history.utils import update_change_reason
-from django.db.models import Q
+from django.db.models import Q, Value
 from django.db.models.functions import Concat
 from openpyxl import Workbook
 from django.core.files.temp import NamedTemporaryFile
