@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 {% extends 'frame/base.html' %}
 
-{% block title %}新增合約 - 寶晶紙本公文{% endblock %}
+{% block title %}新增合約 - 寶晶取號系統{% endblock %}
 {% block content %}
   <section id="doclist" class="py-3">
     <div class="container py-3">
@@ -78,6 +78,7 @@
                 <div class="form-group">
                   {{ form.sign_date.errors }}
                   {{ form.sign_date.label_tag }} {{ form.sign_date }}
+                  <small class="form-text text-muted">請填西元年ex: 2023/01/01</small>
                 </div>
               </div>
               <div class="col-12 col-md-3">
@@ -90,12 +91,14 @@
                 <div class="form-group">
                   {{ form.start_date.errors }}
                   {{ form.start_date.label_tag }} {{ form.start_date }}
+                  <small class="form-text text-muted">請填西元年ex: 2023/01/01</small>
                 </div>
               </div>
               <div class="col-12 col-md-3">
                 <div class="form-group">
                   {{ form.end_date.errors }}
                   {{ form.end_date.label_tag }} {{ form.end_date }}
+                  <small class="form-text text-muted">請填西元年ex: 2023/01/01</small>
                 </div>
               </div>
             </div>
