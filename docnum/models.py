@@ -58,6 +58,8 @@ class OfficalDoc(models.Model):
     pubdate = models.DateField()
     title = models.CharField(max_length=300)
     addtime = models.DateTimeField(auto_now_add=True)
+    is_valid = models.BooleanField(default=True)
+    invalid_reason = models.CharField(null=True, blank=True, max_length=300)
 
     class Meta:
         unique_together = [['comp', 'dept', 'sn']]
@@ -84,6 +86,8 @@ class ReceiveDoc(models.Model):
         on_delete=models.PROTECT,
         related_name='receivedocs',
     )
+    is_valid = models.BooleanField(default=True)
+    invalid_reason = models.CharField(null=True, blank=True, max_length=300)
 
     def __str__(self):
         return self.fullsn

@@ -14,7 +14,23 @@
       {% endif %}
       <h1 class="my-3">{{ rcvdoc.fullsn }} - 收文詳細資料</h1>
       <div class="mb-5 text-right"><span class="text-muted">新增日期: {{ rcvdoc.addtime|date:"Y-m-d g:i:s a" }}</span></div>
-
+      {% if request.user.id == rcvdoc.author or perms.docnum.delete_receivedoc %}
+      <div class="row my-0">
+        {% if rcvdoc.is_valid %}
+          <div class="col text-right my-0">
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
+              作廢
+            </button>
+          </div>
+        {% else %}
+          <div class="col">
+            <div class="alert alert-danger" role="alert">
+              已作廢，作廢原因：{{ rcvdoc.invalid_reason }}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
       <div class="row my-3">
         <div class="col-sm-3 col-lg-2">
           <p class="font-weight-bold">來函機關發文日期</p>
@@ -71,7 +87,34 @@
       </div>
       <a href="{% url 'Receive_List' %}"><div role="button" class="btn btn-danger">返回收文列表</div></a>
     </div>
-
+    {% if request.user.id == rcvdoc.author or perms.docnum.delete_receivedoc %}
+    <div class="modal fade" id="disableModal" tabindex="-1" role="dialog" aria-labelledby="disableModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form method="POST" action="{% url 'Receive_disable' rcvdoc.id %}" class="needs-validation" onsubmit="" novalidate>
+            {% csrf_token %}
+            <div class="modal-header">
+              <h5 class="modal-title" id="disableModalLabel">確認是否做廢 <span class="text-primary font-weight-bold">{{ rcvdoc.fullsn }}</span> ？</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <label for="id_disable_reason">作廢原因*：</label>
+              <input class="form-control" id="id_disable_reason" name="disable_reason" required>
+              <div class="invalid-feedback">
+                請填作廢原因！
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+              <button type="submit" class="btn btn-danger" >作廢</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </section>
   <script>
     $(document).ready(function() {

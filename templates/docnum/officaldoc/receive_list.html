@@ -26,6 +26,14 @@
   <section id="doclist" class="py-3">
     <div class="container py-3">
       <h1 class="my-3">收文一覽</h1>
+      {% if messages %}
+        {% for message in messages %}
+          <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
       <div class="row">
         <div class="col-6 my-3">
           <a role="button" class="btn btn-primary" href="{% url 'Receive_add' %}">新增收文</a>
@@ -46,7 +54,7 @@
             <table class="table table-hover">
               <thead>
                 <tr>
-                  <th scope="col" class="sort fit" data-sort="senddate">來函機關發文日期</th>
+                  <th scope="col" class="sort fit" data-sort="senddate">來函日期</th>
                   <th scope="col" class="sort fit" data-sort="rcvcomp">收文機關</th>
                   <th scope="col" class="sort" data-sort="fullsn">收文字號</th>
                   <th scope="col" class="sort fit" data-sort="senddept">來函機關</th>
@@ -58,13 +66,13 @@
               </thead>
               <tbody class="list">
                 {% for doc in doc_list %}
-                <tr>
+                <tr {% if not doc.is_valid %}class="table-secondary"{% endif %}>
                   <td class="senddate">{{ doc.senddate|date:"Y-m-d" }}</td>
                   <td class="rcvcomp"><a href="{% url 'Comp_detail' doc.rcvcomp.id %}">{{ doc.rcvcomp.shortname }}</a></td>
-                  <td class="fullsn"><a href="{% url 'Receive_result' doc.id %}">{{ doc.fullsn }}</a></td>
+                  <td><a class="fullsn" href="{% url 'Receive_result' doc.id %}">{{ doc.fullsn }}</a></td>
                   <td class="senddept">{{ doc.senddept }}</td>
                   <td class="sendsn">{{ doc.sendsn }}</td>
-                  <td class="abstract nonfit">{{ doc.abstract }}</td>
+                  <td class="abstract nonfit">{% if not doc.is_valid %}<span class="text-danger">[作廢] </span>{% endif %}{{ doc.abstract }}</td>
                   <td class="name">{{ doc.author.last_name }}{{ doc.author.first_name }}</td>
                   <td class="addtime">{{ doc.addtime|date:"Y-m-d" }}</td>
                 </tr>

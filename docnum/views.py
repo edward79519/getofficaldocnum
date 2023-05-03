@@ -31,7 +31,7 @@ def doc_list(request):
     if mngr_group in request.user.groups.all():
         docs = OfficalDoc.objects.all().order_by("-addtime")
     else:
-        docs = OfficalDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
+        docs = OfficalDoc.objects.filter(author_id=request.user.id, is_valid=True).order_by("-addtime")
     templates = loader.get_template('docnum/officaldoc/send_list.html')
     context = {
         'doc_list': docs,
@@ -194,6 +194,20 @@ def doc_result(request, id_docnum):
 
 
 @login_required
+def doc_disable(request, id_docnum):
+    doc = OfficalDoc.objects.get(id=id_docnum)
+    reason = request.POST['disable_reason']
+    if request.user.id == doc.author.id or request.user.has_perm('docnum.delete_officaldoc'):
+        doc.is_valid = False
+        doc.invalid_reason = reason
+        doc.save()
+        messages.add_message(request, messages.SUCCESS, f"作廢發文字號: {doc.fullsn}- 成功！ 原因：{reason}")
+        return redirect('Doc_index')
+    else:
+        return redirect('Non_auth_error')
+
+
+@login_required
 def send_export(request):
     alldata = OfficalDoc.objects.all().values_list('pubdate', 'comp__fullname', 'dept__fullname', 'fullsn',
                                                    'author__last_name', 'author__first_name', 'title', 'addtime')
@@ -246,7 +260,7 @@ def receivedoc_list(request):
     if mngr_group in request.user.groups.all():
         docs = ReceiveDoc.objects.all().order_by("-addtime")
     else:
-        docs = ReceiveDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
+        docs = ReceiveDoc.objects.filter(author_id=request.user.id, is_valid=True).order_by("-addtime")
     templates = loader.get_template('docnum/officaldoc/receive_list.html')
     context = {
         'doc_list': docs,
@@ -291,6 +305,19 @@ def receivedoc_result(request, id_rcvdoc):
     }
     return HttpResponse(template.render(context, request))
 
+
+@login_required()
+def recivedoc_disable(request, id_rcvdoc):
+    rcvdoc = ReceiveDoc.objects.get(id=id_rcvdoc)
+    reason = request.POST['disable_reason']
+    if request.user.id == rcvdoc.author.id or request.user.has_perm('docnum.delete_receivedoc'):
+        rcvdoc.is_valid = False
+        rcvdoc.invalid_reason = reason
+        rcvdoc.save()
+        messages.add_message(request, messages.SUCCESS, f"作廢收文字號: {rcvdoc.fullsn}- 成功！ 原因：{reason}")
+        return redirect('Receive_List')
+    else:
+        return redirect('Non_auth_error')
 
 @login_required
 def receive_export(request):

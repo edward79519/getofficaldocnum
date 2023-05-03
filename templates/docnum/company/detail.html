@@ -77,12 +77,12 @@
                       </thead>
                       <tbody class="list">
                         {% for doc in doc_list %}
-                        <tr>
+                        <tr {% if not doc.is_valid %}class="table-secondary"{% endif %}>
                           <td class="pubdate">{{ doc.pubdate|date:"Y-m-d" }}</td>
                           <td class="dept">{{ doc.dept }}</td>
                           <td class="fullsn"><a href="{% url 'Doc_add_result' doc.id %}">{{ doc.fullsn }}</a></td>
                           <td class="name">{{ doc.author.last_name }}{{ doc.author.first_name }}</td>
-                          <td class="abstract nonfit">{{ doc.title }}</td>
+                          <td class="abstract nonfit">{% if not doc.is_valid %}<span class="text-danger">[作廢]</span> {% endif %}{{ doc.title }}</td>
                           <td class="addtime">{{ doc.addtime|date:"Y-m-d" }}</td>
                         </tr>
                         {% empty %}
@@ -115,7 +115,7 @@
                     <table class="table table-hover">
                       <thead>
                         <tr>
-                          <th scope="col" class="sort" data-sort="senddate">來函機關發文日期</th>
+                          <th scope="col" class="sort" data-sort="senddate">來函日期</th>
                           <th scope="col" class="sort" data-sort="fullsn">收文字號</th>
                           <th scope="col" class="sort fit" data-sort="senddept">來函機關</th>
                           <th scope="col" class="sort" data-sort="sendsn">來函字號</th>
@@ -126,12 +126,12 @@
                       </thead>
                       <tbody class="list">
                         {% for doc in rcv_list %}
-                        <tr>
+                        <tr {% if not doc.is_valid %}class="table-secondary"{% endif %}>
                           <td class="senddate">{{ doc.senddate|date:"Y-m-d" }}</td>
                           <td class="fullsn"><a href="{% url 'Receive_result' doc.id %}">{{ doc.fullsn }}</a></td>
                           <td class="senddept">{{ doc.senddept }}</td>
                           <td class="sendsn">{{ doc.sendsn }}</td>
-                          <td class="abstract nonfit">{{ doc.abstract }}</td>
+                          <td class="abstract nonfit">{% if not doc.is_valid %}<span class="text-danger">[作廢]</span> {% endif %}{{ doc.abstract }}</td>
                           <td class="name">{{ doc.author.last_name }}{{ doc.author.first_name }}</td>
                           <td class="addtime">{{ doc.addtime|date:"Y-m-d" }}</td>
                         </tr>
