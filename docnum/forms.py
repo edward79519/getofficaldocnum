@@ -17,7 +17,7 @@ class AddDocForm(forms.ModelForm):
 
     class Meta:
         model = OfficalDoc
-        fields = "__all__"
+        exclude = ['is_valid', 'invalid_reason']
         widgets = {
             'comp': forms.Select(attrs={'class': 'custom-select'}),
             'dept': forms.Select(attrs={'class': 'custom-select'}),
@@ -33,7 +33,7 @@ class AddReceiveDocForm(forms.ModelForm):
 
     class Meta:
         model = ReceiveDoc
-        exclude = ['addtime']
+        exclude = ['addtime', 'is_valid', 'invalid_reason']
         widgets = {
             'sn': forms.TextInput(attrs={'class': 'form-control-plaintext'}),
             'fullsn': forms.TextInput(attrs={'class': 'form-control-plaintext'}),
