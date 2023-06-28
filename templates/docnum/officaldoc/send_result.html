@@ -16,11 +16,13 @@
       <div class="mb-5 text-right"><span class="text-muted">新增日期: {{ doc.addtime|date:"Y-m-d g:i:s a" }}</span></div>
       <div class="row my-0">
         {% if doc.is_valid %}
-          <div class="col text-right my-0">
-            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
-              作廢
-            </button>
-          </div>
+          {% if request.user == doc.author or perms.docnum.delete_officaldoc %}
+            <div class="col text-right my-0">
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
+                作廢
+              </button>
+            </div>
+          {% endif %}
         {% else %}
           <div class="col">
             <div class="alert alert-danger" role="alert">
@@ -79,7 +81,7 @@
       </div>
       <a href="{% url 'Doc_index' %}"><div role="button" class="btn btn-danger">返回發文列表</div></a>
     </div>
-    {% if request.user.id == doc.author or perms.docnum.delete_officaldoc %}
+    {% if request.user == doc.author or perms.docnum.delete_officaldoc %}
     <div class="modal fade" id="disableModal" tabindex="-1" role="dialog" aria-labelledby="disableModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">

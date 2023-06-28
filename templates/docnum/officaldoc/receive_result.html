@@ -17,11 +17,13 @@
       {% if request.user.id == rcvdoc.author or perms.docnum.delete_receivedoc %}
       <div class="row my-0">
         {% if rcvdoc.is_valid %}
-          <div class="col text-right my-0">
-            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
-              作廢
-            </button>
-          </div>
+          {% if request.user == doc.author or perms.docnum.delete_officaldoc %}
+            <div class="col text-right my-0">
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
+                作廢
+              </button>
+            </div>
+          {% endif %}
         {% else %}
           <div class="col">
             <div class="alert alert-danger" role="alert">
@@ -87,7 +89,7 @@
       </div>
       <a href="{% url 'Receive_List' %}"><div role="button" class="btn btn-danger">返回收文列表</div></a>
     </div>
-    {% if request.user.id == rcvdoc.author or perms.docnum.delete_receivedoc %}
+    {% if request.user == rcvdoc.author or perms.docnum.delete_receivedoc %}
     <div class="modal fade" id="disableModal" tabindex="-1" role="dialog" aria-labelledby="disableModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">

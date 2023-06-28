@@ -28,11 +28,11 @@ column_name = ['合約編號', '公司名稱', '合約類型', '取號狀態', '
 
 # email list for total report
 mngr_mail_list = [
-    '寶晶能源合約取號系統<edwardhsu@inaenergy.com.tw>',
+    '藍啓儒<chijulan@inaenergy.com.tw>', '李穎涵<febeli@inaenergy.com.tw>', '徐郁鈞<edwardhsu@inaenergy.com.tw>'
 ]
 
 # email sender
-EMAIL_SEND = '寶晶能源合約取號系統<edwardhsu@inaenergy.com.tw>'
+EMAIL_SEND = '寶晶能源合約取號系統<service@inaenergy.com.tw>'
 
 
 #IP and PORT
