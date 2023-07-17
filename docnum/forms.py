@@ -53,7 +53,7 @@ class AddCompanyForm(forms.ModelForm):
         fields = ['fullname', 'shortname']
         widgets = {
             'fullname': forms.TextInput(attrs={'class': 'form-control'}),
-            'shortname': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 2}),
+            'shortname': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 3}),
         }
 
 
