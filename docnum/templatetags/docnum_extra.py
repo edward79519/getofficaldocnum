@@ -48,7 +48,7 @@ def can_disable(user, contra):
         if user.id is contra.created_by.id:
             if contra.status.name == "已取號":
                 return True
-        elif MNGR_GROUP in user.groups.all():
+        elif mngr_group in user.groups.all():
             return True
         else:
             return False
