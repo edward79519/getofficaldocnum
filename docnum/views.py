@@ -537,7 +537,7 @@ def contract_extend(request, contra_id):
 @login_required
 def contract_list(request):
     template = loader.get_template('docnum/contract/list.html')
-    contracts = Contract.objects.filter(is_valid=True)
+    contracts = Contract.objects.all()
     context = {
         'contracts': contracts,
     }
