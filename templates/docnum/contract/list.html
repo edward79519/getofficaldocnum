@@ -24,18 +24,19 @@
       userList.filter(function (item) {
         return item.values().is_valid === 'True';
       });
-      console.log(userList);
       $(document).ready(function() {
         $('#showDisableSwitch').on('click', function () {
           let btnStatus = $(this).is(':checked');
-          if ($(this).is(':checked')) {
+          let switchLabel = $(this).next();
+          if (btnStatus) {
             userList.filter();
+            switchLabel.text('隱藏已作廢資料');
           }else{
             userList.filter(function (item) {
               return item.values().is_valid === 'True';
             });
+            switchLabel.text('顯示已作廢資料');
           }
-          console.log(btnStatus);
         });
       });
     </script>

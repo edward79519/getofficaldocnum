@@ -79,6 +79,21 @@
           <p>{{ doc.title }}</p>
         </div>
       </div>
+      <div class="row my-3">
+        <div class="col-sm-3 col-lg-2">
+          <p class="font-weight-bold">備註</p>
+          {% if request.user == doc.author or perms.docnum.delete_receivedoc %}
+            <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#editRmkModal">
+              編輯備註
+            </button>
+          {% endif %}
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <p id="remarkCnt">{{ doc.remark|default:""|linebreaksbr }}</p>
+          </div>
+        </div>
+      </div>
       <a href="{% url 'Doc_index' %}"><div role="button" class="btn btn-danger">返回發文列表</div></a>
     </div>
     {% if request.user == doc.author or perms.docnum.delete_officaldoc %}
@@ -109,6 +124,31 @@
       </div>
     </div>
     {% endif %}
+    {#  判斷使用者與建立者是否相同，或是否具有刪除權限(見 template_tag)  #}
+    {% if request.user == doc.author %}
+      <div class="modal fade" id="editRmkModal" tabindex="-1" role="dialog" aria-labelledby="editRmkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <form method="POST" action="{% url 'Doc_editremark' doc.id %}" class="needs-validation" onsubmit="" novalidate>
+              {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title" id="editRmkModalLabel">修改備註</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <textarea class="form-control" id="id_remark" name="remark" rows="8"></textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary">儲存</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
   </section>
   <script>
     $(document).ready(function() {
@@ -123,6 +163,11 @@
             alert("發文編號：'{{ doc.fullsn }}' 已複製進剪貼簿。")
             selection.removeAllRanges();
         });
+        $('#editRmkModal').on('show.bs.modal', function (event) {
+          var oldRemark = $('#remarkCnt').html().replaceAll('<br>', '\n');
+          var modal = $(this);
+          modal.find('.modal-body textarea').val(oldRemark);
+        })
     });
   </script>
 {% endblock %}

@@ -60,6 +60,7 @@ class OfficalDoc(models.Model):
     addtime = models.DateTimeField(auto_now_add=True)
     is_valid = models.BooleanField(default=True)
     invalid_reason = models.CharField(null=True, blank=True, max_length=300)
+    remark = models.CharField(null=True, blank=True, max_length=500)
 
     class Meta:
         unique_together = [['comp', 'dept', 'sn']]
@@ -88,6 +89,7 @@ class ReceiveDoc(models.Model):
     )
     is_valid = models.BooleanField(default=True)
     invalid_reason = models.CharField(null=True, blank=True, max_length=300)
+    remark = models.CharField(null=True, blank=True, max_length=500)
 
     def __str__(self):
         return self.fullsn
