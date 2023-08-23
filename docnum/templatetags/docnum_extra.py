@@ -45,11 +45,13 @@ def can_confirm(user, contra):
 @register.filter(name='can_disable')
 def can_disable(user, contra):
     if contra.is_valid:
-        if user.id is contra.created_by.id:
+        if mngr_group in user.groups.all():
+            return True
+        elif user.id is contra.created_by.id:
             if contra.status.name == "已取號":
                 return True
-        elif mngr_group in user.groups.all():
-            return True
+            else:
+                return False
         else:
             return False
     else:
@@ -59,11 +61,8 @@ def can_disable(user, contra):
 
 @register.filter(name='can_archive')
 def can_archive(user, contra):
-    if contra.status.name == "已確認":
-        if mngr_group in user.groups.all():
-            return True
-        else:
-            return False
+    if contra.status.name != "已歸檔" and mngr_group in user.groups.all():
+        return True
     else:
         return False
 

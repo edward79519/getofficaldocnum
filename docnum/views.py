@@ -690,7 +690,7 @@ def contract_archive(request, contra_id):
     mngr_group = Group.objects.get(name=MNGR_GROUP)
     is_mngr = mngr_group in request.user.groups.all()
     if is_mngr:
-        if contract.status.name == "已確認":
+        if contract.status.name != "已歸檔":
             contract.status = ContractStatus.objects.get(name="已歸檔")
             contract.changed_by = request.user
             contract.save()

@@ -27,52 +27,54 @@
           {% endif %}
         </div>
       </div>
-      <div class="row mb-3">
-        <div class="col">
-          {% if request.user|can_confirm:contract %}
-            {% if contract.status.name == "已取號" %}
-              <a class="btn btn-success mr-3" href="{% url 'Contract_confirm' contract.id %}">確認</a>
-            {% elif contract.status.name == "已確認" %}
-              <a class="btn btn-danger mr-3" href="{% url 'Contract_confirm' contract.id %}">取消確認</a>
-            {% endif %}
-          {% endif %}
-          {% if request.user|can_update:contract %}
-            <a class="btn btn-primary" href="{% url 'Contract_update' contract.id %}">編輯</a>
-          {% endif %}
-          {% if request.user|can_archive:contract %}
-            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#archiveModal">
-              歸檔
-            </button>
-          {% endif %}
-          {% if contract.status.name == "已歸檔" %}
-          <button type="button" class="btn btn-primary ml-3" data-toggle="modal" data-target="#loanModal">
-            申請取用
-          </button>
-            {% if contract.end_date|ifexpired and contract.created_by == request.user %}
-              {% if contract.expiration == "未處理" %}
-                <button type="button" class="btn btn-danger ml-3" data-toggle="modal" data-target="#expireModal">
-                  合約已到期：{{ contract.expiration }}
-                </button>
-              {% elif contract.expiration == "已終止" %}
-                <button type="button" class="btn btn-secondary ml-3">
-                  合約已到期：{{ contract.expiration }}
-                </button>
-              {% else %}
-                <button type="button" class="btn btn-warning ml-3" data-toggle="modal" data-target="#expireModal">
-                  合約已到期：{{ contract.expiration }}
-                </button>
+      {% if contract.is_valid %}
+        <div class="row mb-3">
+          <div class="col">
+            {% if request.user|can_confirm:contract %}
+              {% if contract.status.name == "已取號" %}
+                <a class="btn btn-success" href="{% url 'Contract_confirm' contract.id %}">確認</a>
+              {% elif contract.status.name == "已確認" %}
+                <a class="btn btn-danger" href="{% url 'Contract_confirm' contract.id %}">取消確認</a>
               {% endif %}
             {% endif %}
+            {% if request.user|can_update:contract %}
+              <a class="btn btn-primary" href="{% url 'Contract_update' contract.id %}">編輯</a>
+            {% endif %}
+            {% if request.user|can_archive:contract %}
+              <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#archiveModal">
+                歸檔
+              </button>
+            {% endif %}
+            {% if contract.status.name == "已歸檔" %}
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loanModal">
+                申請取用
+              </button>
+              {% if contract.end_date|ifexpired and contract.created_by == request.user %}
+                {% if contract.expiration == "未處理" %}
+                  <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#expireModal">
+                    合約已到期：{{ contract.expiration }}
+                  </button>
+                {% elif contract.expiration == "已終止" %}
+                  <button type="button" class="btn btn-secondary">
+                    合約已到期：{{ contract.expiration }}
+                  </button>
+                {% else %}
+                  <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#expireModal">
+                    合約已到期：{{ contract.expiration }}
+                  </button>
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          </div>
+          {% if request.user|can_disable:contract %}
+            <div class="col text-right">
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
+                作廢
+              </button>
+            </div>
           {% endif %}
         </div>
-        {% if request.user|can_disable:contract %}
-          <div class="col text-right">
-            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#disableModal">
-              作廢
-            </button>
-          </div>
-        {% endif %}
-      </div>
+      {% endif %}
       <div class="row mb-3">
         <div class="col-12 col-md-3">
           <label for="sn_id">合約編號：</label>
@@ -205,8 +207,8 @@
               </thead>
               <tbody class="list">
                 {% for extend in extends %}
-                <tr {% if extend.sn == contract.sn %}class="table-primary" {% endif %}>
-                  <td ><a href="{% url 'Contract_detail' extend.id %}">{{ extend.sn }}</a></td>
+                <tr {% if extend.sn == contract.sn %}class="table-primary" {% elif not extend.is_valid %}class="table-secondary" {% endif %}>
+                  <td ><a href="{% url 'Contract_detail' extend.id %}">{{ extend.sn }} {% if not extend.is_valid %}<span class="text-danger"> [已作廢]</span>{% endif %}</a></td>
                   <td class="text-center">{{ extend.sign_date|date:"Y-m-d" }}</td>
                   <td class="text-center">{{ extend.start_date|date:"Y-m-d" }}</td>
                   <td class="text-center">{{ extend.end_date|date:"Y-m-d" }}</td>
@@ -274,7 +276,7 @@
                   </tr>
                 {% empty %}
                   <tr>
-                    <td colspan="6" class="text-center"> 目前沒有公文或沒有權限觀看。 </td>
+                    <td colspan="8" class="text-center"> 目前沒有公文或沒有權限觀看。 </td>
                   </tr>
                 {% endfor %}
               </tbody>
