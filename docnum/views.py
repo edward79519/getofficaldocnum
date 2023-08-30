@@ -821,18 +821,19 @@ def contracts_export2(request):
         datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))
 
     fullname = Concat('created_by__last_name', 'created_by__first_name')
+    last_changed_by = Concat('changed_by__last_name', 'changed_by__first_name')
     manager_name = Concat('manager__last_name', 'manager__first_name')
     contracts = Contract.objects.all().annotate(
-        fullname=fullname, manager_name=manager_name).values_list(
+        fullname=fullname, manager_name=manager_name, last_changed_by=last_changed_by).values_list(
             'sn', 'comp__fullname', 'category__name', 'counterparty', 'content', 'sign_date', 'length', 'start_date', 'end_date',
-            'total_price', 'tax_status__name', 'tax', 'status__name', 'is_valid', 'manage_dept__fullname', 'manager_name',
-           'fullname', 'add_time')
+            'total_price', 'tax_status__name', 'tax', 'status__name', 'manage_dept__fullname', 'manager_name', 'is_valid',
+           'last_changed_by', 'update_time', 'fullname', 'add_time')
     wb = Workbook()
     wb.active.title = "合約清單"
 
     column_name = ['合約編號', '公司名稱', '合約類型', '合約對象', '合約主要內容', '訂約日期', '合約年限', '合約起日',
                    '合約迄日', '合約金額(含稅)',
-                   '印花稅', '印花稅金額', '取號狀態', '是否作廢', '承辦單位', '承辦人', '建立人',
+                   '印花稅', '印花稅金額', '取號狀態', '承辦單位', '承辦人', '是否作廢', '最後更新人', '更新時間', '建立人',
                    '新增日期']
     wb.active.append(column_name)
     for contract in contracts:
