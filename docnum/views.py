@@ -31,7 +31,7 @@ def doc_list(request):
     if mngr_group in request.user.groups.all():
         docs = OfficalDoc.objects.all().order_by("-addtime")
     else:
-        docs = OfficalDoc.objects.filter(author_id=request.user.id, is_valid=True).order_by("-addtime")
+        docs = OfficalDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
     templates = loader.get_template('docnum/officaldoc/send_list.html')
     context = {
         'doc_list': docs,
@@ -208,6 +208,20 @@ def doc_disable(request, id_docnum):
 
 
 @login_required
+def doc_editremark(request, id_docnum):
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    doc = OfficalDoc.objects.get(id=id_docnum)
+    new_remark = request.POST['remark']
+    if request.user.id == doc.author.id or mngr_group in request.user.groups.all():
+        doc.remark = new_remark
+        doc.save()
+        messages.add_message(request, messages.SUCCESS, f"修改: {doc.fullsn} 備註成功！")
+        return redirect('Doc_add_result', doc.id)
+    else:
+        return redirect('Non_auth_error')
+
+
+@login_required
 def send_export(request):
     alldata = OfficalDoc.objects.all().values_list('pubdate', 'comp__fullname', 'dept__fullname', 'fullsn',
                                                    'author__last_name', 'author__first_name', 'title', 'addtime')
@@ -260,7 +274,7 @@ def receivedoc_list(request):
     if mngr_group in request.user.groups.all():
         docs = ReceiveDoc.objects.all().order_by("-addtime")
     else:
-        docs = ReceiveDoc.objects.filter(author_id=request.user.id, is_valid=True).order_by("-addtime")
+        docs = ReceiveDoc.objects.filter(author_id=request.user.id).order_by("-addtime")
     templates = loader.get_template('docnum/officaldoc/receive_list.html')
     context = {
         'doc_list': docs,
@@ -318,6 +332,21 @@ def recivedoc_disable(request, id_rcvdoc):
         return redirect('Receive_List')
     else:
         return redirect('Non_auth_error')
+
+
+@login_required()
+def recivedoc_editremark(request, id_rcvdoc):
+    rcvdoc = ReceiveDoc.objects.get(id=id_rcvdoc)
+    mngr_group = Group.objects.get(name=MNGR_GROUP)
+    new_remark = request.POST['remark']
+    if request.user.id == rcvdoc.author.id or mngr_group in request.user.groups.all():
+        rcvdoc.remark = new_remark
+        rcvdoc.save()
+        messages.add_message(request, messages.SUCCESS, f"修改: {rcvdoc.fullsn} 備註成功！")
+        return redirect('Receive_result', rcvdoc.id)
+    else:
+        return redirect('Non_auth_error')
+
 
 @login_required
 def receive_export(request):
@@ -537,7 +566,7 @@ def contract_extend(request, contra_id):
 @login_required
 def contract_list(request):
     template = loader.get_template('docnum/contract/list.html')
-    contracts = Contract.objects.filter(is_valid=True)
+    contracts = Contract.objects.all()
     context = {
         'contracts': contracts,
     }
@@ -661,7 +690,7 @@ def contract_archive(request, contra_id):
     mngr_group = Group.objects.get(name=MNGR_GROUP)
     is_mngr = mngr_group in request.user.groups.all()
     if is_mngr:
-        if contract.status.name == "已確認":
+        if contract.status.name != "已歸檔":
             contract.status = ContractStatus.objects.get(name="已歸檔")
             contract.changed_by = request.user
             contract.save()
@@ -792,18 +821,19 @@ def contracts_export2(request):
         datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))
 
     fullname = Concat('created_by__last_name', 'created_by__first_name')
+    last_changed_by = Concat('changed_by__last_name', 'changed_by__first_name')
     manager_name = Concat('manager__last_name', 'manager__first_name')
     contracts = Contract.objects.all().annotate(
-        fullname=fullname, manager_name=manager_name).values_list(
+        fullname=fullname, manager_name=manager_name, last_changed_by=last_changed_by).values_list(
             'sn', 'comp__fullname', 'category__name', 'counterparty', 'content', 'sign_date', 'length', 'start_date', 'end_date',
-            'total_price', 'tax_status__name', 'tax', 'status__name', 'is_valid', 'manage_dept__fullname', 'manager_name',
-           'fullname', 'add_time')
+            'total_price', 'tax_status__name', 'tax', 'status__name', 'manage_dept__fullname', 'manager_name', 'is_valid',
+           'last_changed_by', 'update_time', 'fullname', 'add_time')
     wb = Workbook()
     wb.active.title = "合約清單"
 
     column_name = ['合約編號', '公司名稱', '合約類型', '合約對象', '合約主要內容', '訂約日期', '合約年限', '合約起日',
                    '合約迄日', '合約金額(含稅)',
-                   '印花稅', '印花稅金額', '取號狀態', '是否作廢', '承辦單位', '承辦人', '建立人',
+                   '印花稅', '印花稅金額', '取號狀態', '承辦單位', '承辦人', '是否作廢', '最後更新人', '更新時間', '建立人',
                    '新增日期']
     wb.active.append(column_name)
     for contract in contracts:

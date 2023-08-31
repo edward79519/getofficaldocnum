@@ -8,7 +8,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
     <script>
       var options = {
-        valueNames: [ 'pubdate', 'company', 'dept', 'fullsn', 'name', 'abstract', 'addtime' ],
+        valueNames: [ 'is_valid', 'pubdate', 'company', 'dept', 'fullsn', 'name', 'abstract', 'addtime' ],
         page: 10,
         pagination: [{
             name: "pagination",
@@ -20,6 +20,25 @@
 
       /*table = id of the div */
       var userList = new List('table', options);
+
+      userList.filter(function (item) {
+        return item.values().is_valid === 'True';
+      });
+      $(document).ready(function() {
+        $('#showDisableSwitch').on('click', function () {
+          let btnStatus = $(this).is(':checked');
+          let switchLabel = $(this).next();
+          if (btnStatus) {
+            userList.filter();
+            switchLabel.text('隱藏已作廢資料');
+          }else{
+            userList.filter(function (item) {
+              return item.values().is_valid === 'True';
+            });
+            switchLabel.text('顯示已作廢資料');
+          }
+        });
+      });
     </script>
 {% endblock %}
 {% block content %}
@@ -43,6 +62,12 @@
             <a role="button" class="btn btn-secondary" href="{% url 'Send_Export' %}">匯出發文總表</a>
           {% endif %}
         </div>
+        <div class="col-12 text-right">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="showDisableSwitch">
+            <label class="custom-control-label" for="showDisableSwitch">顯示已作廢資料</label>
+          </div>
+        </div>
         <div class="col-12">
           <div class="table-responsive" id="table">
             <div class="input-group mb-3">
@@ -54,6 +79,7 @@
             <table class="table table-hover">
               <thead>
                 <tr>
+                  <th scope="col" class="d-none">作廢</th>
                   <th scope="col" class="sort" data-sort="pubdate">發文日期</th>
                   <th scope="col" class="sort fit" data-sort="company">公司</th>
                   <th scope="col" class="sort" data-sort="dept">部門</th>
@@ -66,6 +92,7 @@
               <tbody class="list">
                 {% for doc in doc_list %}
                 <tr {% if not doc.is_valid %}class="table-secondary"{% endif %}>
+                  <td class="d-none is_valid">{{ doc.is_valid }}</td>
                   <td class="pubdate">{{ doc.pubdate|date:"Y-m-d" }}</td>
                   <td class="company nonfit"><a href="{% url 'Comp_detail' doc.comp.id %}">{{ doc.comp.shortname }}</a></td>
                   <td class="dept">{{ doc.dept }}</td>

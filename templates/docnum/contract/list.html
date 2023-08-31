@@ -8,7 +8,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
     <script>
       var options = {
-        valueNames: [ 'sn', 'comp', 'category', 'counterparty', 'counter_dept', 'status', 'author', 'add_time'],
+        valueNames: [ 'is_valid', 'sn', 'comp', 'category', 'counterparty', 'counter_dept', 'status', 'author', 'add_time'],
         page: 10,
         pagination: [{
             name: "pagination",
@@ -20,6 +20,25 @@
 
       /*table = id of the div */
       var userList = new List('table', options);
+
+      userList.filter(function (item) {
+        return item.values().is_valid === 'True';
+      });
+      $(document).ready(function() {
+        $('#showDisableSwitch').on('click', function () {
+          let btnStatus = $(this).is(':checked');
+          let switchLabel = $(this).next();
+          if (btnStatus) {
+            userList.filter();
+            switchLabel.text('隱藏已作廢資料');
+          }else{
+            userList.filter(function (item) {
+              return item.values().is_valid === 'True';
+            });
+            switchLabel.text('顯示已作廢資料');
+          }
+        });
+      });
     </script>
 {% endblock %}
 {% block content %}
@@ -38,16 +57,26 @@
       </div>
     {% endif %}
       <h1 class="my-3">合約一覽</h1>
-      <div class="row">
-        <div class="col-6 my-3">
+      <div class="row my-3">
+        <div class="col-6">
           <a role="button" class="btn btn-primary" href="{% url 'Contract_add' %}">新增合約編號</a>
         </div>
-        <div class="col-6 my-3 text-right">
+        <div class="col-6 text-right">
           {% if user|has_group:"OffDoc Manager" %}
             <a role="button" class="btn btn-secondary" href="{% url 'Contract_Export' %}">匯出合約總表</a>
             <a role="button" class="btn btn-secondary" href="{% url 'Loan_export' %}">匯出合約取用總表</a>
           {% endif %}
         </div>
+      </div>
+      <div class="row my-1">
+        <div class="col-12 text-right">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="showDisableSwitch">
+            <label class="custom-control-label" for="showDisableSwitch">顯示已作廢資料</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
         <div class="col-12">
           <div class="table-responsive" id="table">
             <div class="input-group mb-3">
@@ -59,6 +88,7 @@
             <table class="table table-hover">
               <thead>
                 <tr>
+                  <th scope="col" class="d-none">作廢</th>
                   <th scope="col" class="sort" data-sort="sn">合約編號</th>
                   <th scope="col" class="sort" data-sort="comp">公司名稱</th>
                   <th scope="col" class="sort" data-sort="category">合約類型</th>
@@ -71,8 +101,9 @@
               </thead>
               <tbody class="list">
                 {% for contract in contracts %}
-                <tr>
-                  <td ><a href="{% url 'Contract_detail' contract.id %}" class="sn">{{ contract.sn }}</a></td>
+                <tr {% if not contract.is_valid %}class="table-secondary"{% endif %}>
+                  <td class="d-none is_valid">{{ contract.is_valid }}</td>
+                  <td ><a href="{% url 'Contract_detail' contract.id %}" class="sn">{{ contract.sn }}</a>{% if not contract.is_valid %} <span class="text-danger">[已作廢]</span>{% endif %}</td>
                   <td class="comp">{{ contract.comp }}</td>
                   <td class="category">{{ contract.category }}</td>
                   <td class="counterparty">{{ contract.counterparty }}</td>

@@ -8,7 +8,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
     <script>
       var options = {
-        valueNames: [ 'senddate', 'rcvcomp', 'fullsn', 'senddept', 'sendsn', 'abstract', 'name', 'addtime'],
+        valueNames: [ 'is_valid', 'senddate', 'rcvcomp', 'fullsn', 'senddept', 'sendsn', 'abstract', 'name', 'addtime'],
         page: 10,
         pagination: [{
             name: "pagination",
@@ -20,6 +20,26 @@
 
       /*table = id of the div */
       var userList = new List('table', options);
+
+      userList.filter(function (item) {
+        return item.values().is_valid === 'True';
+      });
+
+      $(document).ready(function() {
+        $('#showDisableSwitch').on('click', function () {
+          let btnStatus = $(this).is(':checked');
+          let switchLabel = $(this).next();
+          if (btnStatus) {
+            userList.filter();
+            switchLabel.text('隱藏已作廢資料');
+          }else{
+            userList.filter(function (item) {
+              return item.values().is_valid === 'True';
+            });
+            switchLabel.text('顯示已作廢資料');
+          }
+        });
+      });
     </script>
 {% endblock %}
 {% block content %}
@@ -34,6 +54,7 @@
           </div>
         {% endfor %}
       {% endif %}
+
       <div class="row">
         <div class="col-6 my-3">
           <a role="button" class="btn btn-primary" href="{% url 'Receive_add' %}">新增收文</a>
@@ -42,6 +63,12 @@
           {% if user|has_group:"OffDoc Manager" %}
             <a role="button" class="btn btn-secondary" href="{% url 'Receive_Export' %}">匯出收文總表</a>
           {% endif %}
+        </div>
+        <div class="col-12 text-right">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="showDisableSwitch">
+            <label class="custom-control-label" for="showDisableSwitch">顯示已作廢資料</label>
+          </div>
         </div>
         <div class="col-12">
           <div class="table-responsive" id="table">
@@ -54,6 +81,7 @@
             <table class="table table-hover">
               <thead>
                 <tr>
+                  <th scope="col" class="d-none">作廢</th>
                   <th scope="col" class="sort fit" data-sort="senddate">來函日期</th>
                   <th scope="col" class="sort fit" data-sort="rcvcomp">收文機關</th>
                   <th scope="col" class="sort" data-sort="fullsn">收文字號</th>
@@ -67,6 +95,7 @@
               <tbody class="list">
                 {% for doc in doc_list %}
                 <tr {% if not doc.is_valid %}class="table-secondary"{% endif %}>
+                  <td class="d-none is_valid">{{ doc.is_valid }}</td>
                   <td class="senddate">{{ doc.senddate|date:"Y-m-d" }}</td>
                   <td class="rcvcomp"><a href="{% url 'Comp_detail' doc.rcvcomp.id %}">{{ doc.rcvcomp.shortname }}</a></td>
                   <td><a class="fullsn" href="{% url 'Receive_result' doc.id %}">{{ doc.fullsn }}</a></td>

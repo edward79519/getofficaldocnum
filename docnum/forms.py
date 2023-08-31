@@ -26,6 +26,7 @@ class AddDocForm(forms.ModelForm):
             'fullsn': forms.TextInput(attrs={'class': 'form-control-plaintext'}),
             'pubdate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'title': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'remark': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
 
@@ -43,6 +44,7 @@ class AddReceiveDocForm(forms.ModelForm):
             'abstract': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'rcvcomp': forms.Select(attrs={'class': 'custom-select'}),
             'author': forms.Select(attrs={'class': 'custom-select'}),
+            'remark': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
 
