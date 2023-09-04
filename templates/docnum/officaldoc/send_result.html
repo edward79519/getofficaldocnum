@@ -1,4 +1,5 @@
 {% extends 'frame/base.html' %}
+{% load docnum_extra %}
 
 {% block title %}{{ doc.fullsn }} - 寶晶取號系統{% endblock %}
 {% block content %}
@@ -82,7 +83,7 @@
       <div class="row my-3">
         <div class="col-sm-3 col-lg-2">
           <p class="font-weight-bold">備註</p>
-          {% if request.user == doc.author or perms.docnum.delete_receivedoc %}
+          {% if request.user == doc.author or request.user|has_group:"OffDoc Manager" %}
             <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#editRmkModal">
               編輯備註
             </button>
@@ -125,7 +126,7 @@
     </div>
     {% endif %}
     {#  判斷使用者與建立者是否相同，或是否具有刪除權限(見 template_tag)  #}
-    {% if request.user == doc.author %}
+    {% if request.user == doc.author or request.user|has_group:"OffDoc Manager" %}
       <div class="modal fade" id="editRmkModal" tabindex="-1" role="dialog" aria-labelledby="editRmkModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
