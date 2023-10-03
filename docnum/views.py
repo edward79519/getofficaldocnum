@@ -517,7 +517,12 @@ def contract_add(request):
             return redirect('Contract_detail', contra_id=new_contra.id)
     else:
         user_group = request.user.groups.exclude(name='Taipei').first()
-        user_dept_name = user_group.gpdptrlt.first().dept.fullname
+        user_dept = user_group.gpdptrlt.first()
+
+        if user_dept:
+            user_dept_name = user_dept.dept.fullname
+        else:
+            user_dept_name = None
         user_fullname = request.user.last_name+request.user.first_name
         form = AddContractForm(initial={'counter_contact': user_fullname, 'counter_dept': user_dept_name})
     context = {
