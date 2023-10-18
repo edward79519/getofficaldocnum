@@ -481,17 +481,20 @@ def get_contractsn2(comp_id, cate_id, date):
 
 
 def get_extendcontract(contra_sn):
-    contra_list = Contract.objects.filter(sn__startswith=contra_sn).order_by('-add_time')
+    origin_sn = contra_sn.split('-')[0]
+    # contra_list = Contract.objects.filter(sn__startswith=contra_sn).order_by('-add_time')
+    contra_list = Contract.objects.filter(sn__startswith=origin_sn).order_by('-add_time')
     newest_sn = contra_list.first().sn
     if len(newest_sn) == 12:
         new_extend_sn = newest_sn + "-01"
         return new_extend_sn
     elif len(newest_sn) == 15:
-        [origin_sn, serial_sn] = newest_sn.split("-")
+        [prefix_sn, serial_sn] = newest_sn.split("-")
         new_serial_sn = str(int(serial_sn) + 1).zfill(2)
         if len(new_serial_sn) != 2:
             return None
-        new_extend_sn = origin_sn + "-" + new_serial_sn
+        new_extend_sn = prefix_sn + "-" + new_serial_sn
+        return new_extend_sn
     else:
         return None
 
@@ -562,7 +565,7 @@ def contract_extend(request, contra_id):
                 'project': old_contract.project,
             })
     context = {
-        'old_contract_sn': old_contract.sn,
+        'old_contract_sn': old_contract.sn[0:12],
         'form': form,
     }
     return HttpResponse(template.render(context, request))
