@@ -480,6 +480,31 @@ def get_contractsn2(comp_id, cate_id, date):
         return new_sn
 
 
+def get_contractsn3(comp_id, cate_id, date):
+    compplmsn = Company.objects.get(id=comp_id).plmsn
+    sn_startswith = f'C{str(compplmsn).zfill(2)}{str(cate_id).zfill(2)}{str(date.year)[-2:]}{str(date.month).zfill(2)}'
+    contract_list = Contract.objects.filter(
+        comp_id=comp_id,
+        category_id=cate_id,
+        add_time__year=date.year,
+        add_time__month=date.month,
+    ).exclude(sn__contains="-").filter(sn__startswith=sn_startswith)
+    ## exclude => 濾掉增補合約, filter startswith => 確保合約從該月計算 (CXXXX"YYMM"XXX)
+    if contract_list.count() != 0:
+        latest_contract = contract_list.order_by('-sn').first()
+        new_sn = latest_contract.sn[0:9] + str(int(latest_contract.sn[9:12])+1).zfill(3)
+        return new_sn
+    else:
+        new_sn = 'C{}{}{}{}{}'.format(
+            str(compplmsn).zfill(2),
+            str(cate_id).zfill(2),
+            str(date.year)[-2:],
+            str(date.month).zfill(2),
+            "001"
+        )
+        return new_sn
+
+
 def get_extendcontract(contra_sn):
     origin_sn = contra_sn.split('-')[0]
     # contra_list = Contract.objects.filter(sn__startswith=contra_sn).order_by('-add_time')
@@ -512,7 +537,7 @@ def contract_add(request):
         post_copy['changed_by'] = request.user.id
         post_copy['created_by'] = request.user.id
         post_copy['status'] = 1
-        post_copy['sn'] = get_contractsn2(comp_id=comp_id, cate_id=cate_id, date=today)
+        post_copy['sn'] = get_contractsn3(comp_id=comp_id, cate_id=cate_id, date=today)  ## change to fixed get sn function
         form = AddContractForm(post_copy)
         if form.is_valid():
             new_contra = form.save()
